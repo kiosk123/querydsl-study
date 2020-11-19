@@ -4,9 +4,7 @@
 ## 구성정보
 * JPA 2.2
 * java 버전 11
-* bootstrap v4.3.1
-* Thymeleaf 3
-* Thymeleaf 이클립스 플러그인 - http://www.thymeleaf.org/eclipse-plugin-update-site/
+
 
 ## 스프링 프로젝트 구성하기
 * [Spring Initializr 사이트 활용](https://start.spring.io/)
