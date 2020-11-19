@@ -21,21 +21,36 @@ class QuerydslTest01 {
 
     @Autowired
     EntityManager em;
-    
-	@Test
-	void contextLoads() {
-	    Hello hello = new Hello();
-	    em.persist(hello);
-	    
-	    JPAQueryFactory query = new JPAQueryFactory(em);
-	    
-	    //생성자 파라미터로 alias가 들어감 JPQL에서 from Member m에서 m역할
-	    QHello qHello = new QHello("h"); 
-	    
-	    Hello result = query.selectFrom(qHello)
-	                        .fetchOne();
-	    
-	    assertEquals(result, hello);
-	    assertEquals(hello.getId(), hello.getId());
-	}
+
+    @Test
+    void queryDslTest01() {
+        Hello hello = new Hello();
+        em.persist(hello);
+
+        JPAQueryFactory query = new JPAQueryFactory(em);
+
+        // 생성자 파라미터로 alias가 들어감 JPQL에서 from Member m에서 m역할
+        QHello qHello = new QHello("h");
+
+        Hello result = query.selectFrom(qHello).fetchOne();
+
+        assertEquals(result, hello);
+        assertEquals(hello.getId(), hello.getId());
+    }
+
+    @Test
+    void queryDslTest02() {
+        Hello hello = new Hello();
+        em.persist(hello);
+
+        JPAQueryFactory query = new JPAQueryFactory(em);
+
+        // hello 변수가 alias 역할
+        QHello qHello = QHello.hello;
+
+        Hello result = query.selectFrom(qHello).fetchOne();
+
+        assertEquals(result, hello);
+        assertEquals(hello.getId(), hello.getId());
+    }
 }
