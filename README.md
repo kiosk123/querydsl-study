@@ -54,7 +54,9 @@ spring:
        - **다른 디렉터리에 빌드할꺼면 그 폴더자체를 .gitignore 대상으로 해야한다**
     - 이클립스에서는 Q클래스가 생성되는 디렉터리를 프로젝트의 빌드 패스에 추가해야한다
        - 프로젝트에서 오른쪽 마우스 버튼 클릭
-       - Build Path -> Configure Build Path -> Source 탭 이동 후 다음 그림과 같이 설정
+       - Build Path -> Configure Build Path -> Source 탭 이동 후 다음 그림 순으로 설정
+![스텝1](https://github.com/kiosk123/querydsl-study/blob/master/%EC%86%8C%EC%8A%A4%ED%83%AD.png)
+![스텝2](https://github.com/kiosk123/querydsl-study/blob/master/%EC%86%8C%EC%8A%A4%ED%8F%B4%EB%8D%94%EC%84%A0%ED%83%9D.png)
     
 ```
 /*Querydsl build.gradle 설정*/
