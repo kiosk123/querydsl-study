@@ -28,6 +28,5 @@ class QuerydslTest01 {
 	    em.clear();
 	    
 	    JPAQueryFactory query = new JPAQueryFactory(em);
-	    
 	}
 }
