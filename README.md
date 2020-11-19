@@ -44,14 +44,15 @@ spring:
     - [Spring Initializr](https://start.spring.io/)에서 스프링 부트 기본 프로젝트를 구성한다.
     - Querydsl은 오픈소스 프로젝트이므로 다운받은 프로젝트에서 별도의 구성이 필요한다. 
        - 아래의 querydsl build.gradle 설정을 참고하라
-    - 프로젝트 구성 후 엔티트를 작성하고 나면 Querydsl이 인식할 수 있는 Q타입 클래스를 만들어야한다.
+    - 프로젝트 구성 후 엔티트를 작성하고 나면 Querydsl이 인식할 수 있는 Q클래스를 만들어야한다.
     - 그레이들 태스크에서 other -> complieQuerydsl을 실행한다.
        - gradlew를 직접 사용하려면 프로젝트 폴터에서 다음과 같이 입력한다
             - ./gradlew clean # Q타입클래스를 버롯해서 컴파일되거나 빌드된 파일 전부다 삭제
            - ./gradlew comipleQuerydsl # Q타입클래스 생성 compileJava로도 가능함
-    - **참고로 querydsl용으로 생성된 Q타입 클래스는 계속 변화될 가능성이 높기 때문에 git 커밋 하지 말것을 권장** 
+    - **참고로 querydsl용으로 생성된 Q클래스는 계속 변화될 가능성이 높기 때문에 git 커밋 하지 말것을 권장** 
        - **.gitignore에 build 폴더를 예외대상으로하고 Q타입 클래스는 build폴더에서 생성해서 사용하는 것을 권장**
        - **다른 디렉터리에 빌드할꺼면 그 폴더자체를 .gitignore 대상으로 해야한다 **
+       - 인텔리J에서는 위와 같이 설정하면 잘되지만 이클립스에서는 설정 방법 고민이 필요함
     
 ```
 /*Querydsl build.gradle 설정*/
