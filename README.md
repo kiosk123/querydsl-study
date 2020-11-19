@@ -41,3 +41,5 @@ spring:
 
 ## 챕터별 설명
  - 챕터 1 : 프로젝트 구성
+    - [Spring Initializr](https://start.spring.io/)에서 스프링 부트 기본 프로젝트를 구성한다.
+    - Querydsl은 오픈소스 프로젝트이므로 다운받은 프로젝트에서 별도의 구성이 필요한다

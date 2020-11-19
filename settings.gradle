@@ -8,3 +8,5 @@
  */
 
 rootProject.name = 'querydsl-study'
+
+include 'chapter-01-querydsl-configuration'
