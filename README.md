@@ -42,4 +42,49 @@ spring:
 ## 챕터별 설명
  - 챕터 1 : 프로젝트 구성
     - [Spring Initializr](https://start.spring.io/)에서 스프링 부트 기본 프로젝트를 구성한다.
-    - Querydsl은 오픈소스 프로젝트이므로 다운받은 프로젝트에서 별도의 구성이 필요한다
+    - Querydsl은 오픈소스 프로젝트이므로 다운받은 프로젝트에서 별도의 구성이 필요한다. 
+       - 아래의 querydsl build.gradle 설정을 참고하라
+    - 프로젝트 구성 후 엔티트를 작성하고 나면 Querydsl이 인식할 수 있는 Q타입 클래스를 만들어야한다.
+    - 그레이들 태스크에서 other -> complieQuerydsl을 실행한다.
+       - gradlew를 직접 사용하려면 프로젝트 폴터에서 다음과 같이 입력한다
+            - ./gradlew clean # Q타입클래스를 버롯해서 컴파일되거나 빌드된 파일 전부다 삭제
+           - ./gradlew comipleQuerydsl # Q타입클래스 생성 compileJava로도 가능함
+    - **참고로 querydsl용으로 생성된 Q타입 클래스는 계속 변화될 가능성이 높기 때문에 git 커밋 하지 말것을 권장** 
+       - **.gitignore에 build 폴더를 예외대상으로하고 Q타입 클래스는 build폴더에서 생성해서 사용하는 것을 권장**
+       - **다른 디렉터리에 빌드할꺼면 그 폴더자체를 .gitignore 대상으로 해야한다 **
+    
+```
+/*Querydsl build.gradle 설정*/
+plugins {
+    //생략..
+	//querydsl gradle 플러그인
+	id "com.ewerk.gradle.plugins.querydsl" version "1.0.10"
+}
+//생략...
+dependencies {
+    //생략..
+	//querydsl 추가
+	implementation 'com.querydsl:querydsl-jpa'
+}
+
+//생략..
+//querydsl 추가 시작
+def querydslDir = "$buildDir/generated/querydsl"
+
+querydsl {
+	jpa = true
+	querydslSourcesDir = querydslDir
+}
+sourceSets {
+	main.java.srcDir querydslDir
+}
+
+configurations {
+	querydsl.extendsFrom compileClasspath
+}
+
+compileQuerydsl {
+	options.annotationProcessorPath = configurations.querydsl
+}
+```
+
