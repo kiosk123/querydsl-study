@@ -22,7 +22,7 @@
     - 운영에서는 사용하지 말 것
     
  - [테스트시 Unable to Find @SpringBootConfiguration 오류 해결 ](https://www.baeldung.com/spring-boot-unable-to-find-springbootconfiguration-with-datajpatest)
-    - @테스트시 @SpringBootApplication이 설정된 클래스의 패키와 같은 경로거나 하위 경로로 패키지 경로를 맞춰줘야 실행됨
+    - 테스트시 @SpringBootApplication이 설정된 클래스의 패키와 같은 경로거나 하위 경로로 패키지 경로를 맞춰줘야 실행됨
 
 ## 스프링 부트 JPA 매핑 테이블및 컬럼 네이밍 규칙
  - 스프링 부트에서 엔티티명과 프로퍼티가 JPA 테이블과 테이블 컬럼과 매핑될때 기본적으로 카멜케이스 + 언더스코어 전략을 사용한다.
@@ -51,7 +51,7 @@ spring:
            - ./gradlew comipleQuerydsl # Q타입클래스 생성 compileJava로도 가능함
     - **참고로 querydsl용으로 생성된 Q클래스는 계속 변화될 가능성이 높기 때문에 git 커밋 하지 말것을 권장** 
        - **.gitignore에 build 폴더를 예외대상으로하고 Q타입 클래스는 build폴더에서 생성해서 사용하는 것을 권장**
-       - **다른 디렉터리에 빌드할꺼면 그 폴더자체를 .gitignore 대상으로 해야한다 **
+       - **다른 디렉터리에 빌드할꺼면 그 폴더자체를 .gitignore 대상으로 해야한다**
     - 이클립스에서는 Q클래스가 생성되는 디렉터리를 프로젝트의 빌드 패스에 추가해야한다
        - 프로젝트에서 오른쪽 마우스 버튼 클릭
        - Build Path -> Configure Build Path -> Source 탭 이동 후 다음 그림과 같이 설정
