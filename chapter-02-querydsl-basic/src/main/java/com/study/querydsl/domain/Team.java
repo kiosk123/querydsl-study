@@ -14,9 +14,11 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@ToString(of = {"id", "name"})
 public class Team extends BaseEntity {
     
     @Column(name = "TEAM_ID")
