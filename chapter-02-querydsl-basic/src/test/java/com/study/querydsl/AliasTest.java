@@ -17,7 +17,7 @@ import com.study.querydsl.domain.QHello;
 @ActiveProfiles("test")
 @SpringBootTest
 @Transactional
-class QuerydslTest01 {
+class AliasTest {
 
     @Autowired
     EntityManager em;

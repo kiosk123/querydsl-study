@@ -26,7 +26,7 @@ public class Member extends BaseEntity {
     private Long id;
     
     @Getter @Setter
-    private String name;
+    private String userName;
     
     @Getter @Setter
     private Integer age;
@@ -36,17 +36,17 @@ public class Member extends BaseEntity {
     Team team;
     
     
-    public Member(String name) {
-        this.name = name;
+    public Member(String userName) {
+        this.userName = userName;
     }
     
-    public Member(String name, Integer age) {
-        this(name);
+    public Member(String userName, Integer age) {
+        this(userName);
         this.age = age;
     }
     
-    public Member(String name, Integer age, Team team) {
-        this(name, age);
+    public Member(String userName, Integer age, Team team) {
+        this(userName, age);
         this.team = team;
     }
     

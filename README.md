@@ -94,4 +94,28 @@ compileQuerydsl {
 ```
 
  - 챕터 2 : 기본 문법
- 
+    - Q타입 사용
+        - static Alias를 사용하거나 Alias를 직접 생성자 파라미터에 넘겨서 사용하는 것도 가능
+    - 검색조건 : 다음과 같이 다양하게 검색조건을 활용가능
+        - <target property>.eq(param) : =
+        - <target property>.ne(param) : !=
+        - <target property>.eq(param).not() : !=
+        - <target property>.inNotNull() : IS NOT NULL
+        - <target property>.in(param...) : in ( a, b, c...)
+        - <target property>.notIn(param...) : not in ( a, b, c...)
+        - <target property>.between(a, b) : between a and b
+        - <target property>.goe(param) : >=
+        - <target property>.gt(param) : >
+        - <target property>.loe(param) : <=
+        - <target property>.lt(param) : <
+        - <target property>.like("%string") : like '%string'
+        - <target property>.contains("string") : like '%string%'	
+        - <target property>.startsWith("string") : like "string%"
+    - 결과조회
+        - fetch() : 리스트 조회, 데이터 없으면 빈 리스트 반환
+        - fetchOne() : 단건 조회
+            - 결과가 없으면 : null
+            - 결과가 둘 이상이면 : com.querydsl.cor.NonUniqueResultException
+        - fetchFirst() : limit(1).fetchOne()
+        - fetchResults() : 페이징 포함, total count 쿼리 추가 실행
+        - fetchOunt() : count 쿼리로 변경해서 count수 조회
