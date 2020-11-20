@@ -1,5 +1,6 @@
 package com.study.querydsl;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.List;
@@ -36,8 +37,10 @@ class JoinTest {
         //given
         Team team1 = new Team("team1");
         Team team2 = new Team("team2");
+        Team team3 = new Team("team3");
         em.persist(team1);
         em.persist(team2);
+        em.persist(team3);
         
         Member member1 = new Member("member1", 10, team1);
         Member member2 = new Member("member2", 20, team1);
@@ -85,5 +88,25 @@ class JoinTest {
                                                 .or(member.team.name.isNull()))
                                          .fetch();
         assertEquals(3, result.size());
+        
+        assertThat(result).extracting("userName")
+                          .containsExactly("member4", "member5", "member6");
+    }
+    
+    @Test
+    void rightJoin() {
+        QMember member = QMember.member;
+        
+        //아무런 멤버도 없는 팀조회
+        List<Team> result = queryFactory.select(member.team)
+                                        .from(member)
+                                        .rightJoin(member.team)
+                                        .where(member.team.isNull())
+                                        .fetch();
+        
+        assertEquals(1, result.size());
+        
+        assertThat(result).extracting("name")
+                          .containsExactly("team3");
     }
 }
