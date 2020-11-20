@@ -18,6 +18,7 @@ import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.study.querydsl.domain.Member;
 import com.study.querydsl.domain.QMember;
+import com.study.querydsl.domain.QTeam;
 import com.study.querydsl.domain.Team;
 
 @ActiveProfiles("test")
@@ -48,12 +49,15 @@ class JoinTest {
         Member member4 = new Member("member4", 40, team2);
         Member member5 = new Member("member5", 50, team2);
         Member member6 = new Member("member6", 60, null);
+        Member member7 = new Member("team3", 60, null);
+        
         em.persist(member1);
         em.persist(member2);
         em.persist(member3);
         em.persist(member4);
         em.persist(member5);
         em.persist(member6);
+        em.persist(member7);
         em.flush();
         em.clear();
     }
@@ -64,7 +68,7 @@ class JoinTest {
         
         List<Member> result = queryFactory.select(member)
                                          .from(member)
-                                         .join(member.team)
+                                         .innerJoin(member.team)
                                          .where(member.team.name.eq("team1"))
                                          .fetch();
         
@@ -87,10 +91,10 @@ class JoinTest {
                                          .where(member.team.name.ne("team1")
                                                 .or(member.team.name.isNull()))
                                          .fetch();
-        assertEquals(3, result.size());
+        assertEquals(4, result.size());
         
         assertThat(result).extracting("userName")
-                          .containsExactly("member4", "member5", "member6");
+                          .containsExactly("member4", "member5", "member6", "team3");
     }
     
     @Test
@@ -108,5 +112,18 @@ class JoinTest {
         
         assertThat(result).extracting("name")
                           .containsExactly("team3");
+    }
+    
+    @Test
+    void thetaJoin() {
+        QMember member = QMember.member;
+        QTeam team = QTeam.team;
+        
+        Member findMember = queryFactory.select(member)
+                                        .from(member, team)
+                                        .where(member.userName.eq(team.name))
+                                        .fetchOne();
+        
+        assertEquals("team3", findMember.getUserName());
     }
 }
