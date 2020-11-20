@@ -123,3 +123,4 @@ compileQuerydsl {
     - 페이징 : offset, limit
     - 집합 : sum, count, avg, max, min..., groupBy, having 조건
     - 조인
+    - fetch 조인 : 조회대상의 연관관계 엔티티 필드까지 

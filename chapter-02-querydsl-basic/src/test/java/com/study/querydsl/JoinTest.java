@@ -31,6 +31,10 @@ class JoinTest {
      * innerJoin(조인대상, 별칭파라미터로 사용할 Q타임)
      * leftJoin(조인대상, 별칭파라미터로 사용할 Q타임)
      * join(조인대상, 별칭파라미터로 사용할 Q타임)
+     * 
+     * 기본적으로 alias를 이용하는 join은 on절에 식별값 비교가 들어가기 때문에
+     * on 메소드를 활용하여 식별값 비교 조건을 추가할 필요가 없지만 (JPQL과 동일)
+     * 쎄타조인 같은 경우는 on메소드를 이용하여 미리 조인할 대상을 필터링하는 것이 중요하다.
      */
     @Autowired
     EntityManager em;
@@ -117,7 +121,7 @@ class JoinTest {
                                          .from(member)
                                          .leftJoin(member.team, team)
                                          .where(team.name.ne("team1")
-                                                .or(team.name.isNull()))
+                                         .or(team.name.isNull()))
                                          .fetch();
         assertEquals(4, result.size());
         
