@@ -33,6 +33,7 @@ public class Member extends BaseEntity {
     
     @ManyToOne(fetch = FetchType.LAZY )
     @JoinColumn(name = "TEAM_ID")
+    @Getter
     Team team;
     
     

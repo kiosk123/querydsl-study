@@ -121,4 +121,5 @@ compileQuerydsl {
         - fetchOunt() : count 쿼리로 변경해서 count수 조회
     - 정렬 : orderBy
     - 페이징 : offset, limit
-    - 집합 : sum, count, avg, max, min..., groupBy
+    - 집합 : sum, count, avg, max, min..., groupBy, having 조건
+    - 조인
