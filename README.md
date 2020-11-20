@@ -119,5 +119,6 @@ compileQuerydsl {
         - fetchFirst() : limit(1).fetchOne()
         - fetchResults() : 페이징 포함한 객체를 반환 total count 쿼리 추가 실행 - 페이징 쿼리가 복잡해 지면 사용하지 않을 것을 권장
         - fetchOunt() : count 쿼리로 변경해서 count수 조회
-    - 정렬
-    - 페이징
+    - 정렬 : orderBy
+    - 페이징 : offset, limit
+    - 집합 : sum, count, avg, max, min..., groupBy
