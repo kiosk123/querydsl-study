@@ -117,5 +117,6 @@ compileQuerydsl {
             - 결과가 없으면 : null
             - 결과가 둘 이상이면 : com.querydsl.cor.NonUniqueResultException
         - fetchFirst() : limit(1).fetchOne()
-        - fetchResults() : 페이징 포함, total count 쿼리 추가 실행
+        - fetchResults() : 페이징 포함한 객체를 반환 total count 쿼리 추가 실행 - 페이징 쿼리가 복잡해 지면 사용하지 않을 것을 권장
         - fetchOunt() : count 쿼리로 변경해서 count수 조회
+    - 정렬

@@ -40,6 +40,7 @@ class SearchConditionTest {
         em.persist(member1);
         em.persist(member2);
         em.flush();
+        em.clear();
     }
     
     @Test
