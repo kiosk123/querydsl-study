@@ -129,3 +129,4 @@ compileQuerydsl {
         - **단 from 절 서브쿼리는 지원되지 않는다.(JPA스펙)**
             - from 절 서브쿼리는 join으로 변경하거나, 애플리케이션에서 쿼리를 2번 분리해서 실행하거나, nativeSQL을 사용한다.
     - case문
+    - 상수와 문자더하기
