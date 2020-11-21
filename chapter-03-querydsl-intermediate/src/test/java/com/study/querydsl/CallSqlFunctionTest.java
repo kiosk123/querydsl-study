@@ -24,7 +24,7 @@ import com.study.querydsl.domain.Team;
 @ActiveProfiles("test")
 @SpringBootTest
 @Transactional
-class BulkQueryTest {
+class CallSqlFunctionTest {
 
     @Autowired
     EntityManager em;
@@ -85,66 +85,5 @@ class BulkQueryTest {
         //30살 넘어서 비회원 처리 당한 회원수(처리된 로우의 수)
         assertEquals(4, count);
         assertEquals("비회원", userName);
-    }
-    
-    
-    @Test
-    void bulkAdd() {
-        QMember member = QMember.member;
-        
-        long count = queryFactory.update(member)
-                                 .set(member.age, member.age.add(1))
-                                 .execute();
-        
-        List<Integer> ages = queryFactory.select(member.age)
-                                         .from(member)
-                                         .fetch();
-        
-        assertEquals(7, count);
-        assertThat(ages).contains(11, 21, 31, 41, 51, 61, 71);
-    }
-    
-    
-    @Test
-    void bulkMinus() {
-        QMember member = QMember.member;
-        
-        long count = queryFactory.update(member)
-                                 .set(member.age, member.age.add(-1))
-                                 .execute();
-        
-        List<Integer> ages = queryFactory.select(member.age)
-                                         .from(member)
-                                         .fetch();
-        
-        assertEquals(7, count);
-        assertThat(ages).contains(9, 19, 29, 39, 49, 59, 69);
-    }
-    
-    @Test
-    void bulkMultiply() {
-        QMember member = QMember.member;
-        
-        long count = queryFactory.update(member)
-                                 .set(member.age, member.age.multiply(2))
-                                 .execute();
-        
-        List<Integer> ages = queryFactory.select(member.age)
-                                         .from(member)
-                                         .fetch();
-        
-        assertEquals(7, count);
-        assertThat(ages).contains(20, 40, 60, 80, 100, 120, 140);
-    }
-    
-    @Test
-    void bulkDelete() {
-        QMember member = QMember.member;
-        
-        long count = queryFactory.delete(member)
-                                 .where(member.age.gt(30))
-                                 .execute();
-        
-        assertEquals(4, count);
     }
 }
