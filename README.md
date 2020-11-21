@@ -127,3 +127,4 @@ compileQuerydsl {
     - 서브쿼리 : JPAExpressions 활용
         - where와 select(하이버네이트 기준)절 서브쿼리 지원한다.
         - **단 from 절 서브쿼리는 지원되지 않는다.(JPA스펙)**
+            - from 절 서브쿼리는 join으로 변경하거나, 애플리케이션에서 쿼리를 2번 분리해서 실행하거나, nativeSQL을 사용한다.
