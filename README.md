@@ -140,3 +140,5 @@ compileQuerydsl {
         - @QueryProjection을 사용할 경우 단점은 @queryProjections을 사용한 DTO는 Querydsl 라이브러리에 대한 의존성이 생김
             - 차후에 Querydsl을 사용안한다면 코드 수정 및 운영하는데 문제 발생할 가능성은 있음
             - DTO를 순수하게 가져가냐 아니면 실용성 있게 가져가냐에 따라서 사용여부가 결정될 듯
+    - 동적쿼리
+        - BooleanBuilder
