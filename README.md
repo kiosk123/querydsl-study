@@ -143,3 +143,4 @@ compileQuerydsl {
     - 동적쿼리
         - BooleanBuilder
         - where 다중 파라미터
+    - 벌크연산 : 수정 삭제 벌크 연산
