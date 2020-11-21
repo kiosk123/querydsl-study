@@ -105,7 +105,7 @@ class ProjectionTest {
         
         /**
          * 인스턴스 생성후(디폴트 생성자 필수)
-         * Projections.bean 사용시 settter getter로 접근하여 DTO에 값 설정
+         * Projections.bean 사용시 settter 로 접근하여 DTO에 값 설정
          * Q타입 프로퍼티 명과 DTO 필드명 일치해야함
          */
         List<MemberDTO> result = queryFactory.select(Projections.bean(MemberDTO.class, 
@@ -120,7 +120,7 @@ class ProjectionTest {
         
         
         /**
-         * Projections.fields 사용시 settter getter 접근이 아닌 필드에 바로 접근하여 DTO에 값 세팅
+         * Projections.fields 사용시 settter 접근이 아닌 필드에 바로 접근하여 DTO에 값 세팅
          * Q타입 프로퍼티 명과 DTO 필드명 일치해야함
          */
         result = queryFactory.select(Projections.fields(MemberDTO.class, 
