@@ -14,11 +14,14 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.study.querydsl.domain.Member;
 import com.study.querydsl.domain.QMember;
 import com.study.querydsl.domain.Team;
+import com.study.querydsl.dto.MemberDTO;
+import com.study.querydsl.dto.UserDTO;
 
 @ActiveProfiles("test")
 @SpringBootTest
@@ -77,7 +80,7 @@ class ProjectionTest {
     }
     
     @Test
-    void projectionTarges() {
+    void projectionTargets() {
         QMember member = QMember.member;
         
         List<Tuple> result = queryFactory.select(member.userName, member.age)
@@ -88,5 +91,70 @@ class ProjectionTest {
             System.out.println("userName : " + t.get(member.userName) + ", age : " + t.get(member.age));
             System.out.println("userName : " + t.get(0, String.class) + ", age : " + t.get(1, Integer.class));
         });
+    }
+    
+    @Test
+    void projectionUsingDTO() {
+        QMember member = QMember.member;
+        
+        
+        /**
+         * 인스턴스 생성후(디폴트 생성자 필수)
+         * Projections.bean 사용시 settter getter로 접근하여 DTO에 값 설정
+         * Q타입 프로퍼티 명과 DTO 필드명 일치해야함
+         */
+        List<MemberDTO> result = queryFactory.select(Projections.bean(MemberDTO.class, 
+                                                                      member.userName, 
+                                                                      member.age))
+                                             .from(member)
+                                             .fetch();
+        
+        result.forEach(o -> {
+            System.out.println("userName : " + o.getUserName() +", age : " + o.getAge());
+        });
+        
+        
+        /**
+         * Projections.fields 사용시 settter getter 접근이 아닌 필드에 바로 접근하여 DTO에 값 세팅
+         * Q타입 프로퍼티 명과 DTO 필드명 일치해야함
+         */
+        result = queryFactory.select(Projections.fields(MemberDTO.class, 
+                                                        member.userName, 
+                                                        member.age))
+                             .from(member)
+                             .fetch();
+        
+        result.forEach(o -> {
+            System.out.println("userName : " + o.getUserName() +", age : " + o.getAge());
+        });
+        
+        /**
+         * Projections.constructor 사용시 생성자 파라미터 타입으로 프로젝션한 데이터 타입과 매칭하여 값을 설정
+         * 
+         */
+        result = queryFactory.select(Projections.constructor(MemberDTO.class, 
+                                                             member.userName, 
+                                                             member.age))
+                             .from(member)
+                             .fetch();
+                                        
+        result.forEach(o -> {
+            System.out.println("userName : " + o.getUserName() +", age : " + o.getAge());
+        });
+        
+        /**
+         * DTO와 Q타입의 프로퍼티명이 일치하지 않을때 as메소드를 활용하여 값을 설정한 DTO 프로퍼티이름으로 별칭을 설정해야함
+         * 프로퍼티 명이 일치 하지 않은 DTO의 프로퍼티는 null로 세팅됨
+         */
+        List<UserDTO> result2 = queryFactory.select(Projections.constructor(UserDTO.class, 
+                                                                            member.userName.as("name"), 
+                                                                            member.age))
+                                            .from(member)
+                                            .fetch();
+        
+        result2.forEach(o -> {
+            System.out.println("name : " + o.getName() +", age : " + o.getAge());
+        });
+
     }
 }
