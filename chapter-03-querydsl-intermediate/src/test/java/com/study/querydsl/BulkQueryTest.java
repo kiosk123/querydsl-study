@@ -2,6 +2,8 @@ package com.study.querydsl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.util.List;
+
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceUnit;
@@ -73,7 +75,14 @@ class BulkQueryTest {
         em.flush();
         em.clear(); //벌크 연산 후 항상 컨텍스트 초기화
         
+        String userName = queryFactory.select(member.userName)
+                                      .distinct()
+                                      .from(member)
+                                      .where(member.age.gt(30))
+                                      .fetchOne();
+        
         //30살 넘어서 비회원 처리 당한 회원수(처리된 로우의 수)
         assertEquals(4, count);
+        assertEquals("비회원", userName);
     }
 }
