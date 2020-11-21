@@ -69,7 +69,7 @@ class SubQueryTest {
     }
     
     @Test
-    void subQuery01() {
+    void subQueryEq() {
         QMember member = QMember.member;
         QMember subMember = new QMember("subMember");
         
@@ -86,7 +86,7 @@ class SubQueryTest {
     }
     
     @Test
-    void subQuery02() {
+    void subQueryIn() {
         QMember member = QMember.member;
         QMember subMember = new QMember("subMember");
         
@@ -102,6 +102,31 @@ class SubQueryTest {
         assertEquals(6, members.size());
         assertThat(members).extracting("age")
                            .contains(20, 30, 40, 50, 60, 70);
+        
+    }
+    
+    @Test
+    void subQuerySelectClause() {
+        QMember member = QMember.member;
+        QMember subMember = new QMember("subMember");
+        
+        /**
+         * select 절에서 서브쿼리 실행
+         * [member1, 40.0]
+         * [member2, 40.0]
+         * [member3, 40.0]
+         * [member4, 40.0]
+         * [member5, 40.0]
+         * [member6, 40.0]
+         * [member7, 40.0]
+         */
+        queryFactory.select(member.userName, JPAExpressions.select(subMember.age.avg())
+                                                           .from(subMember))
+                    .from(member)
+                    .fetch()
+                    .forEach(System.out::println);
+        
+        
         
     }
 }

@@ -125,3 +125,5 @@ compileQuerydsl {
     - 조인
     - fetch 조인 : 조회대상의 연관관계 엔티티 필드까지 
     - 서브쿼리 : JPAExpressions 활용
+        - where와 select(하이버네이트 기준)절 서브쿼리 지원한다.
+        - **단 from 절 서브쿼리는 지원되지 않는다.(JPA스펙)**
