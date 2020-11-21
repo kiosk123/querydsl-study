@@ -11,3 +11,4 @@ rootProject.name = 'querydsl-study'
 
 include 'chapter-01-querydsl-configuration'
 include 'chapter-02-querydsl-basic'
+include 'chapter-03-querydsl-intermediate'
