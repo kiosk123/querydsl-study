@@ -1,5 +1,6 @@
 package com.study.querydsl;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -68,7 +69,7 @@ class SubQueryTest {
     }
     
     @Test
-    void subQuery() {
+    void subQuery01() {
         QMember member = QMember.member;
         QMember subMember = new QMember("subMember");
         
@@ -81,6 +82,26 @@ class SubQueryTest {
                                         .fetchOne();
         
         assertEquals(70, findMember.getAge());
+        
+    }
+    
+    @Test
+    void subQuery02() {
+        QMember member = QMember.member;
+        QMember subMember = new QMember("subMember");
+        
+        //나이가 10살 보다 많은  회원 조회 - 서브쿼리에서는 alias가 달라야함 일반 SQL사람과 동일
+        List<Member> members = queryFactory.selectFrom(member)
+                                        .where(member.age.in(
+                                               JPAExpressions.select(subMember.age)
+                                                             .from(subMember)
+                                                             .where(subMember.age.gt(10))
+                                         ))
+                                        .fetch();
+        
+        assertEquals(6, members.size());
+        assertThat(members).extracting("age")
+                           .contains(20, 30, 40, 50, 60, 70);
         
     }
 }
