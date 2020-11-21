@@ -14,8 +14,11 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.study.querydsl.domain.Member;
 import com.study.querydsl.domain.QMember;
@@ -96,6 +99,7 @@ class ProjectionTest {
     @Test
     void projectionUsingDTO() {
         QMember member = QMember.member;
+        QMember subMember = new QMember("subMember");
         
         
         /**
@@ -152,6 +156,32 @@ class ProjectionTest {
                                             .from(member)
                                             .fetch();
         
+        result2.forEach(o -> {
+            System.out.println("name : " + o.getName() +", age : " + o.getAge());
+        });
+
+        
+        /**
+         * 서브쿼레에 alias를 설정후 DTO로 값을 설정할 수도 있다.
+         */
+        result2 = queryFactory.select(Projections.constructor(UserDTO.class, 
+                                                              member.userName.as("name"), 
+                                                              ExpressionUtils.as(
+                                                              JPAExpressions.select(subMember.age.max())
+                                                                            .from(subMember),"age")
+                                                              ))
+                               .from(member)
+                               .fetch();
+        
+        /**
+         * name : member1, age : 70
+           name : member2, age : 70
+           name : member3, age : 70
+           name : member4, age : 70
+           name : member5, age : 70
+           name : member6, age : 70
+           name : member7, age : 70
+         */
         result2.forEach(o -> {
             System.out.println("name : " + o.getName() +", age : " + o.getAge());
         });
