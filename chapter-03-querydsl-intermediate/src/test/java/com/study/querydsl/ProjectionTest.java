@@ -24,6 +24,7 @@ import com.study.querydsl.domain.Member;
 import com.study.querydsl.domain.QMember;
 import com.study.querydsl.domain.Team;
 import com.study.querydsl.dto.MemberDTO;
+import com.study.querydsl.dto.QMemberDTO;
 import com.study.querydsl.dto.UserDTO;
 
 @ActiveProfiles("test")
@@ -186,5 +187,22 @@ class ProjectionTest {
             System.out.println("name : " + o.getName() +", age : " + o.getAge());
         });
 
+    }
+    
+    @Test
+    void queryProjection() {
+        QMember member = QMember.member;
+        
+        /**
+         * @QueryProjection을 DTO생성자에 설정한다.
+         * 그레이들 compileQuerydsl 태스크를 실행한다.
+         */
+        List<MemberDTO> result = queryFactory.select(new QMemberDTO(member.userName, member.age))
+                                             .from(member)
+                                             .fetch();
+        
+        result.forEach(o -> {
+            System.out.println("userName : " + o.getUserName() +", age : " + o.getAge());
+        });
     }
 }

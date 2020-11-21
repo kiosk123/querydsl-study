@@ -133,3 +133,7 @@ compileQuerydsl {
  - 챕터 3 : 중급 문법
     - 프로젝션
         - 일반타입, Tuple, DTO 변환
+        - @QueryProjection 활용
+            - DTO 생성자에 @QueryProject을 설정
+            - 그레이들 compileQuerydsl 태스크 실행 -> Q이름 DTO 생성
+            - 생성된 Q이름 DTO를 select절에서 new 키워드를 사용하여 생성 후 처리
