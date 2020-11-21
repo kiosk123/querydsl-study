@@ -1,5 +1,6 @@
 package com.study.querydsl;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.List;
@@ -84,5 +85,22 @@ class BulkQueryTest {
         //30살 넘어서 비회원 처리 당한 회원수(처리된 로우의 수)
         assertEquals(4, count);
         assertEquals("비회원", userName);
+    }
+    
+    
+    @Test
+    void bulkAdd() {
+        QMember member = QMember.member;
+        
+        long count = queryFactory.update(member)
+                                 .set(member.age, member.age.add(1))
+                                 .execute();
+        
+        List<Integer> ages = queryFactory.select(member.age)
+                                         .from(member)
+                                         .fetch();
+        
+        assertEquals(7, count);
+        assertThat(ages).contains(11, 21, 31, 41, 51, 61, 71);
     }
 }
