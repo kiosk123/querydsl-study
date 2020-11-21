@@ -2,6 +2,7 @@ package com.study.querydsl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 
 import java.util.List;
 
@@ -16,6 +17,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.study.querydsl.domain.Member;
 import com.study.querydsl.domain.QMember;
@@ -65,25 +67,29 @@ class CallSqlFunctionTest {
         em.clear();
     }
     
+    /**
+     * 회원에서 회원 이름에서 member를 M으로 바꿔서 조회
+     */
     @Test
-    void bulkQuery() {
+    void callSqlFunction() {
         QMember member = QMember.member;
         
-        long count = queryFactory.update(member)
-                                 .set(member.userName, "비회원")
-                                 .where(member.age.gt(30))
-                                 .execute();
-        em.flush();
-        em.clear(); //벌크 연산 후 항상 컨텍스트 초기화
-        
-        String userName = queryFactory.select(member.userName)
-                                      .distinct()
-                                      .from(member)
-                                      .where(member.age.gt(30))
-                                      .fetchOne();
-        
-        //30살 넘어서 비회원 처리 당한 회원수(처리된 로우의 수)
-        assertEquals(4, count);
-        assertEquals("비회원", userName);
+        List<String> names  = queryFactory.select(
+                                                  Expressions.stringTemplate("function('replace', {0}, {1}, {2})",
+                                                  member.userName, 
+                                                  "member",
+                                                  "M"))
+                                          .from(member)
+                                          .fetch();
+        /**
+         * M1
+           M2
+           M3
+           M4
+           M5
+           M6
+           M7
+         */
+        names.forEach(System.out::println);
     }
 }

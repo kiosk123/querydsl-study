@@ -145,3 +145,4 @@ compileQuerydsl {
         - where 다중 파라미터
     - 벌크연산 : 수정 삭제 벌크 연산
     - SQL Function 호출
+        - JPA와 같이 Dialect에 등록된 Function만 호출가능
