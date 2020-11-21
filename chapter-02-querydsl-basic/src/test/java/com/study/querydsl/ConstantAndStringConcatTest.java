@@ -24,7 +24,7 @@ import com.study.querydsl.domain.Team;
 @ActiveProfiles("test")
 @SpringBootTest
 @Transactional
-class ConstantAndStringOperationTest {
+class ConstantAndStringConcatnTest {
 
     @Autowired
     EntityManager em;
