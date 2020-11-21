@@ -67,7 +67,7 @@ class CallSqlFunctionTest {
      * 회원에서 회원 이름에서 member를 M으로 바꿔서 조회
      */
     @Test
-    void callSqlFunction() {
+    void callSqlFunction01() {
         QMember member = QMember.member;
         
         List<String> names  = queryFactory.select(
@@ -86,6 +86,19 @@ class CallSqlFunctionTest {
            M6
            M7
          */
+        names.forEach(System.out::println);
+    }
+    
+    
+    @Test
+    void callSqlFunction02() {
+        QMember member = QMember.member;
+        
+        List<String> names  = queryFactory.select(member.userName)
+                                          .from(member)
+                                          .where(member.userName.eq(member.userName.lower()))
+                                          //.where(member.userName.eq(Expressions.stringTemplate("function('lower',{0})", member.userName)))
+                                          .fetch();
         names.forEach(System.out::println);
     }
 }
