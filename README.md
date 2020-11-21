@@ -132,3 +132,4 @@ compileQuerydsl {
     - 상수와 문자더하기
  - 챕터 3 : 중급 문법
     - 프로젝션
+        - 일반타입, Tuple, DTO 변환
