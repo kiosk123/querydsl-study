@@ -142,3 +142,4 @@ compileQuerydsl {
             - DTO를 순수하게 가져가냐 아니면 실용성 있게 가져가냐에 따라서 사용여부가 결정될 듯
     - 동적쿼리
         - BooleanBuilder
+        - where 다중 파라미터

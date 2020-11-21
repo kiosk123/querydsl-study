@@ -1,5 +1,6 @@
 package com.study.querydsl;
 
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.List;
@@ -16,6 +17,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.study.querydsl.domain.Member;
 import com.study.querydsl.domain.QMember;
@@ -98,5 +101,51 @@ class DynamicQueryTest {
                            .fetch();
     }
     
+    @Test
+    void whereMultiParams() {
+        String userNameParam = "member1";
+        Integer ageParam = 10;
+        
+        List<Member> result = searchMember2(userNameParam, ageParam);
+        
+        
+        assertEquals(1, result.size());
+        
+        assertEquals("member1", result.get(0).getUserName());
+        assertEquals(10, result.get(0).getAge());
+    }
     
+    /**
+     * where절의 null값은 무시됨
+     * where절에서 멀티 파라미터는 기본으로 and이다.
+     */
+    private List<Member> searchMember2(String userNameCond, Integer ageCond) {
+        QMember member = QMember.member;
+        return queryFactory.selectFrom(member)
+                           //.where(userNameEq(userNameCond), ageEq(ageCond))
+                           .where(allEq(userNameCond, ageCond))
+                           .fetch();
+    }
+    
+
+    /**
+     * BooleanExpression을 반환할 것 - 메소드 체이닝을 위해서
+     */
+    private BooleanExpression userNameEq(String userNameCond) {
+        QMember member = QMember.member;
+        if (userNameCond == null) {
+            return null;
+        }
+        return member.userName.eq(userNameCond);
+    }
+    
+    private BooleanExpression ageEq(Integer ageCond) {
+        QMember member = QMember.member;
+        return ageCond != null ? member.age.eq(ageCond) : null;
+    }
+    
+    private BooleanExpression allEq(String userNameCond, Integer ageCond) {
+        return userNameEq(userNameCond).and(ageEq(ageCond));
+    }
+
 }
