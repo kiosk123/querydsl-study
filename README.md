@@ -146,3 +146,5 @@ compileQuerydsl {
     - 벌크연산 : 수정 삭제 벌크 연산
     - SQL Function 호출
         - JPA와 같이 Dialect에 등록된 Function만 호출가능
+        - 기본적으로 ANSI 표준함수들은 Querydsl에서 메소드로 정의되어 있음
+        - 특정 데이터베이스에서만 사용가능한 함수나 사용자 정의 함수를 호출할 때 사용
