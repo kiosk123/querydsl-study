@@ -11,6 +11,7 @@ import javax.persistence.EntityManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
@@ -84,6 +85,41 @@ public class MemberRepositoryImpl implements MemberQuerydslRepository {
         
         return new PageImpl<>(content, pageable, total);
     }
+    
+    
+    /**
+     * total count 최적화
+     */
+    @Override
+    public Page<MemberTeamDTO> searchPageOptimal(MemberSearchCondition condition, Pageable pageable) {
+        List<MemberTeamDTO> content =
+        queryFactory.select(new QMemberTeamDTO(member.id, member.userName, member.age, team.id, team.name))
+                    .from(member)
+                    .leftJoin(member.team, team)
+                    .where(userNameEq(condition.getUserName()),
+                           teamNameEq(condition.getTeamName()),
+                           ageGoe(condition.getAgeGoe()),
+                           ageLoe(condition.getAgeLoe()))
+                    .offset(pageable.getOffset())
+                    .limit(pageable.getPageSize())
+                    .fetch();
+        
+        /**
+         * 람다를 이용해서 count 쿼리가 조건에 따라 호출되어 쿼리 최적화
+         */
+        return PageableExecutionUtils.getPage(content, pageable, () -> {
+            return queryFactory.select(member)
+                                .from(member)
+                                .leftJoin(member.team, team)
+                                .where(userNameEq(condition.getUserName()),
+                                       teamNameEq(condition.getTeamName()),
+                                       ageGoe(condition.getAgeGoe()),
+                                       ageLoe(condition.getAgeLoe()))
+                                .fetchCount();
+        });
+    }
+
+
 
     @Override
     public List<MemberTeamDTO> searchByBuilder(MemberSearchCondition condition) {

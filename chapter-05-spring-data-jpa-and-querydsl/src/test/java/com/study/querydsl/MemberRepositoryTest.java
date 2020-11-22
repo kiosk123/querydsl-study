@@ -125,4 +125,20 @@ class MemberRepositoryTest {
         
         assertEquals(3L, result.getTotalElements());
     }
+    
+    @Test
+    void searchOptimal() {
+        MemberSearchCondition condition = new MemberSearchCondition();
+        condition.setAgeGoe(30);
+        condition.setAgeLoe(60);
+        condition.setTeamName("team2");
+        
+        Page<MemberTeamDTO> result = memberRepository.searchPageOptimal(condition, PageRequest.of(0, 3));
+        
+        assertThat(result.getSize()).isEqualTo(3);
+        assertThat(result.getContent()).extracting("userName")
+                                       .containsExactly("member4", "member5", "member6");
+        
+        assertEquals(3L, result.getTotalElements());
+    }
 }
