@@ -180,3 +180,4 @@ compileQuerydsl {
           - select() , selectFrom() 으로 시작 가능
           - EntityManager , QueryFactory 제공
           - **Querydsl3.x버전 대상으로 만들었으며 스프링 데이터 Sort기능이 정상 동작하지 않음**
+       - Querydsl지원 클래스를 직접만들기

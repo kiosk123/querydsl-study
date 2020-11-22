@@ -20,7 +20,7 @@ import com.study.querydsl.domain.Member;
 import com.study.querydsl.domain.Team;
 import com.study.querydsl.dto.MemberSearchCondition;
 import com.study.querydsl.dto.MemberTeamDTO;
-import com.study.querydsl.repository.MemberQuerydslSupportRepository;
+import com.study.querydsl.repository.MemberQuerydslRepositorySupport;
 
 @ActiveProfiles("test")
 @SpringBootTest
@@ -31,7 +31,7 @@ class MemberQuerydslSupportRepositoryTest {
     EntityManager em;
     
     @Autowired
-    MemberQuerydslSupportRepository memberQuerydslSupportRepository;
+    MemberQuerydslRepositorySupport memberQuerydslSupportRepository;
     
     @BeforeEach
     void before() {

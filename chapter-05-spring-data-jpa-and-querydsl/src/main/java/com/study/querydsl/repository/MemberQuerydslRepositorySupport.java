@@ -26,9 +26,9 @@ import com.study.querydsl.dto.QMemberTeamDTO;
  * 엔티티 매니저 호출시 getEntityManager() 호출
  */
 @Repository
-public class MemberQuerydslSupportRepository extends QuerydslRepositorySupport {
+public class MemberQuerydslRepositorySupport extends QuerydslRepositorySupport {
 
-    public MemberQuerydslSupportRepository() {
+    public MemberQuerydslRepositorySupport() {
         super(Member.class);
     }
     
