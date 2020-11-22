@@ -44,6 +44,7 @@ public abstract class Querydsl4RepositorySupport {
     @Autowired
     public void setEntityManager(EntityManager entityManager) {
         Assert.notNull(entityManager, "EntityManager must not be null!");
+        //동적 Sort(정렬) 관련 코드
         JpaEntityInformation entityInformation = 
                 JpaEntityInformationSupport.getEntityInformation(domainClass, entityManager);
         SimpleEntityPathResolver resolver = SimpleEntityPathResolver.INSTANCE;
