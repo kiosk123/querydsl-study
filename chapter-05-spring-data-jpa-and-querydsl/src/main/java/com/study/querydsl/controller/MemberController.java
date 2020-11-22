@@ -28,6 +28,6 @@ public class MemberController {
     @GetMapping("/v2/members")
     public Page<MemberTeamDTO> searchMemberV2(MemberSearchCondition condition, 
                                               @PageableDefault(page = 0, size = 20)Pageable pageable) {
-        return memberQuerydslRepository.searchPageComplex(condition, pageable);
+        return memberQuerydslRepository.searchPageOptimal(condition, pageable);
     }
 }
