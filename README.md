@@ -154,3 +154,5 @@ compileQuerydsl {
         - **동적 쿼리 작성시에는 조건이 아무것도 없으면 데이터 전체를 끌어오는 현상이 발생할 수 있기 때문에 기본 조건이라도(최소한 limit)넣어서 최적화를 해주는 것이 좋다**
     - 조회 API 컨트롤러
   - 챕터 5 : Spring Data Jpa와 Querydsl 혼합 사용
+    - Spring Data Jpa 리포지토리와 Querydsl 리포지토리 병합
+    - Querydsl과 Spring Data Jpa 페이징 연동
