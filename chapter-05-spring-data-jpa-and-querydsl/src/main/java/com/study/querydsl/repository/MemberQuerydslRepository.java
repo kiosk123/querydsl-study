@@ -18,4 +18,7 @@ public interface MemberQuerydslRepository {
     
     //total count 최적화
     Page<MemberTeamDTO> searchPageOptimal(MemberSearchCondition condition, Pageable pageable);
+    
+    //sort
+    Page<MemberTeamDTO> searchPageBySort(MemberSearchCondition condition, Pageable pageable);
 }

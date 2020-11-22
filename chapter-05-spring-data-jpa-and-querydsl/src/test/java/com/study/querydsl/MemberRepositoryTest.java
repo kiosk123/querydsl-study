@@ -15,8 +15,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.test.context.ActiveProfiles;
 
+import com.querydsl.core.types.Order;
 import com.study.querydsl.domain.Member;
 import com.study.querydsl.domain.Team;
 import com.study.querydsl.dto.MemberSearchCondition;
@@ -138,6 +141,22 @@ class MemberRepositoryTest {
         assertThat(result.getSize()).isEqualTo(3);
         assertThat(result.getContent()).extracting("userName")
                                        .containsExactly("member4", "member5", "member6");
+        
+        assertEquals(3L, result.getTotalElements());
+    }
+    
+    @Test
+    void searchPageBySort() {
+        MemberSearchCondition condition = new MemberSearchCondition();
+        condition.setAgeGoe(50);
+        condition.setAgeLoe(70);
+        condition.setTeamName("team2");
+        
+        Page<MemberTeamDTO> result = memberRepository.searchPageBySort(condition, PageRequest.of(0, 3, Sort.by(Direction.DESC, "userName")));
+        
+        assertThat(result.getSize()).isEqualTo(3);
+        assertThat(result.getContent()).extracting("userName")
+                                       .containsExactly("member7", "member6", "member5");
         
         assertEquals(3L, result.getTotalElements());
     }

@@ -160,3 +160,5 @@ compileQuerydsl {
            - org.springframework.data.support.PageableExecutionUtils를 활용
              - 페이지 시작이면서 컨텐츠 사이즈가 페이지 사이즈보다 작을때
              - 마지막 페이지 일때 (offset + 컨텐츠 사이즈를 더해서 전체사이즈를 구한다)
+    - 정렬 : SpringDataJpa의 정렬을 Querydsl의 정렬(OrderSpecifier)로 변경
+        - 단 단순한 엔티티 하나일때는 가능하지만 조인시에는 안되는 방법
