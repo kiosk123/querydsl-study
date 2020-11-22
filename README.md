@@ -163,3 +163,7 @@ compileQuerydsl {
     - 정렬 : SpringDataJpa의 정렬을 Querydsl의 정렬(OrderSpecifier)로 변경
         - 단 단순한 엔티티 하나일때는 가능하지만 조인시에는 안되는 방법
         - **조건이 복잡해 지면 별도의 파라미터를 받아서 직접 받아서 처리하는 것을 권장**
+    - 번외
+       - QuerydslPredicateExecutor
+          - Spring Data Jpa 인터페이스를 상속한 리포지토리 인터페이스에서 QuerydslPredicateExecutor를 상속받는다.
+          - Spring Data Jpa 인터페이스에서 제공하는 기본 메서드 파라미터에 Querydsl 조건식 사용가능
