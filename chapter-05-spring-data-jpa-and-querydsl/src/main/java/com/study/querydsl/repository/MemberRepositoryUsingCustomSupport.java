@@ -19,9 +19,9 @@ import com.study.querydsl.dto.MemberSearchCondition;
 import com.study.querydsl.repository.support.Querydsl4RepositorySupport;
 
 @Repository
-public class MemberTestRepository extends Querydsl4RepositorySupport{
+public class MemberRepositoryUsingCustomSupport extends Querydsl4RepositorySupport{
 
-    public MemberTestRepository() {
+    public MemberRepositoryUsingCustomSupport() {
         super(Member.class);
     }
     
@@ -38,7 +38,7 @@ public class MemberTestRepository extends Querydsl4RepositorySupport{
     }
     
     /**
-     * QuerydslRepositorySupport 사용해서 데이터를 가져오는 방식
+     * 기존의 querydsl을 사용해서 데이터를 가져오는 방식
      */
     public Page<Member> searchPageByApplyPage(MemberSearchCondition condition, Pageable pageable) {
         JPAQuery<Member> query = selectFrom(member)
@@ -62,6 +62,29 @@ public class MemberTestRepository extends Querydsl4RepositorySupport{
                            ageGoe(condition.getAgeGoe()),
                            ageLoe(condition.getAgeLoe()))
                 );
+    }
+    
+    /**
+     * 커스텀 Support를 사용해서 데이터를 가져오는 방식 counter 쿼리 분리
+     */
+    public Page<Member> applyPagination2(MemberSearchCondition condition, Pageable pageable) {
+        return applyPagination(pageable, query -> 
+                    query
+                    .selectFrom(member)
+                    .where(userNameEq(condition.getUserName()),
+                           teamNameEq(condition.getTeamName()),
+                           ageGoe(condition.getAgeGoe()),
+                           ageLoe(condition.getAgeLoe())),
+                    
+                    countQuery -> 
+                    countQuery
+                    .select(member)
+                    .from(member)
+                    .leftJoin(member.team, team)
+                    .where(userNameEq(condition.getUserName()), 
+                           teamNameEq(condition.getTeamName()),
+                           ageGoe(condition.getAgeGoe()), 
+                           ageLoe(condition.getAgeLoe())));
     }
     
     private BooleanExpression ageLoe(Integer ageLoe) {
