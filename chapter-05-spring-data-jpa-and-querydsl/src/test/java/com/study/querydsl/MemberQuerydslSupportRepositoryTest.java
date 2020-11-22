@@ -1,6 +1,9 @@
 package com.study.querydsl;
 
-import static com.study.querydsl.domain.QMember.member;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
@@ -13,18 +16,20 @@ import org.springframework.test.context.ActiveProfiles;
 
 import com.study.querydsl.domain.Member;
 import com.study.querydsl.domain.Team;
-import com.study.querydsl.repository.MemberRepository;
+import com.study.querydsl.dto.MemberSearchCondition;
+import com.study.querydsl.dto.MemberTeamDTO;
+import com.study.querydsl.repository.MemberQuerydslSupportRepository;
 
 @ActiveProfiles("test")
 @SpringBootTest
 @Transactional
-class QuerdslPredicateExecutorTest {
+class MemberQuerydslSupportRepositoryTest {
 
     @Autowired
     EntityManager em;
     
     @Autowired
-    MemberRepository memberRepository;
+    MemberQuerydslSupportRepository memberQuerydslSupportRepository;
     
     @BeforeEach
     void before() {
@@ -58,7 +63,17 @@ class QuerdslPredicateExecutorTest {
     
     @Test
     void queryPredicationExecutorTest() {
-        Iterable<Member> result = memberRepository.findAll(member.age.between(20, 40).and(member.userName.eq("member3")));
+        MemberSearchCondition condition = new MemberSearchCondition();
+        condition.setAgeGoe(30);
+        condition.setAgeLoe(60);
+        condition.setTeamName("team2");
+        
+        List<MemberTeamDTO> result = memberQuerydslSupportRepository.search(condition);
         result.forEach(System.out::println);
+        
+        assertThat(result.size()).isEqualTo(3);
+        assertThat(result).extracting("userName")
+                          .containsExactly("member4", "member5", "member6");
+        
     }
 }
