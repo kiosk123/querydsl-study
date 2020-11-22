@@ -174,8 +174,9 @@ compileQuerydsl {
           - **단순 조건만 가능**
           - **컨트롤러가 Querydsl에 의존**
        - QuerydslRepositorySupport
-          - 스프링 데이터가 제공하는 페이징을 편리하게 변환
+          - 스프링 데이터가 제공하는 페이징을 편리하게 변환 - **(단!Sort는 오류 발생)**
           - 페이징과 카운트 쿼리 분리 가능
           - 스프링 데이터 Sort 지원
           - select() , selectFrom() 으로 시작 가능
           - EntityManager , QueryFactory 제공
+          - **Querydsl3.x버전 대상으로 만들었으며 스프링 데이터 Sort기능이 정상 동작하지 않음**
