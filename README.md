@@ -157,5 +157,6 @@ compileQuerydsl {
     - Spring Data Jpa 리포지토리와 Querydsl 리포지토리 병합
     - Querydsl과 Spring Data Jpa 페이징 연동
         - count 쿼리를 생략 가능한 경우 생략해서 처리할 수도 있음
-           - 페이지 시작이면서 컨텐츠 사이즈가 페이지 사이즈보다 작을때
-           - 마지막 페이지 일때 (offset + 컨텐츠 사이즈를 더해서 전체사이즈를 구한다)
+           - org.springframework.data.support.PageableExecutionUtils를 활용
+             - 페이지 시작이면서 컨텐츠 사이즈가 페이지 사이즈보다 작을때
+             - 마지막 페이지 일때 (offset + 컨텐츠 사이즈를 더해서 전체사이즈를 구한다)
