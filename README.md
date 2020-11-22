@@ -167,3 +167,9 @@ compileQuerydsl {
        - QuerydslPredicateExecutor
           - Spring Data Jpa 인터페이스를 상속한 리포지토리 인터페이스에서 QuerydslPredicateExecutor를 상속받는다.
           - Spring Data Jpa 인터페이스에서 제공하는 기본 메서드 파라미터에 Querydsl 조건식 사용가능
+          - **묵지석 조인은 가능하지만 left join이 불가능하다**
+          - **클라이언트가 Querydsl에 의존해야한다. 서비스 클래스가 Querydsl이라는 구현 기술에 의존해야한다**
+          - **실무의 복잡한 환경에서 한계가 있음**
+       - [Querydsl Web](https://docs.spring.io/spring-data/jpa/docs/2.2.3.RELEASE/reference/html/#core.web.type-safe)
+          - **단순 조건만 가능**
+          - **컨트롤러가 Querydsl에 의존**
