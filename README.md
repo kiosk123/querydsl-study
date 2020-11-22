@@ -123,7 +123,7 @@ compileQuerydsl {
     - 페이징 : offset, limit
     - 집합 : sum, count, avg, max, min..., groupBy, having 조건
     - 조인
-    - fetch 조인 : 조회대상의 연관관계 엔티티 필드까지 
+    - fetch 조인 : 조회대상의 연관관계 엔티티 필드까지 조회
     - 서브쿼리 : JPAExpressions 활용
         - where와 select(하이버네이트 기준)절 서브쿼리 지원한다.
         - **단 from 절 서브쿼리는 지원되지 않는다.(JPA스펙)**
@@ -151,4 +151,5 @@ compileQuerydsl {
  - 챕터 4 : 실무 활용
     - 순수 Querydsl로 리포지 토리 구성
     - 동적 쿼리와 성능 최적화 조회
+        - **동적 쿼리 작성시에는 조건이 아무것도 없으면 데이터 전체를 끌어오는 현상이 발생할 수 있기 때문에 기본 조건이라도(최소한 limit)넣어서 최적화를 해주는 것이 좋다**
     - 조회 API 컨트롤러
