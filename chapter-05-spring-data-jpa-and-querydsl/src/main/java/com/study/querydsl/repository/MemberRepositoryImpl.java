@@ -217,4 +217,21 @@ public class MemberRepositoryImpl implements MemberQuerydslRepository {
         return (!StringUtils.hasText(userName)) ? null : member.userName.eq(userName);
     }
 
+//    BooleanBuilder를 이용하면 null 걱정 없이 체이닝이 가능하다
+//    private BooleanBuilder ageLoe(Integer ageLoe) {
+//        return Objects.isNull(ageLoe) ? new BooleanBuilder() : new BooleanBuilder(member.age.loe(ageLoe));
+//    }
+//
+//    private BooleanBuilder ageGoe(Integer ageGoe) {
+//        return Objects.isNull(ageGoe) ? new BooleanBuilder() : new BooleanBuilder(member.age.goe(ageGoe));
+//    }
+//
+//    private BooleanBuilder teamNameEq(String teamName) {
+//        return (!StringUtils.hasText(teamName)) ? new BooleanBuilder() : new BooleanBuilder(team.name.eq(teamName));
+//    }
+//
+//    private BooleanBuilder userNameEq(String userName) {
+//        return (!StringUtils.hasText(userName)) ? new BooleanBuilder() : new BooleanBuilder(member.userName.eq(userName));
+//    }
+
 }
