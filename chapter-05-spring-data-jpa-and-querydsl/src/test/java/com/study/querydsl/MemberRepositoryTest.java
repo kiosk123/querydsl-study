@@ -1,6 +1,7 @@
 package com.study.querydsl;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.List;
@@ -12,6 +13,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 
 import com.study.querydsl.domain.Member;
@@ -90,5 +93,36 @@ class MemberRepositoryTest {
         assertEquals(3, collect.size());
         assertThat(collect).extracting("userName")
                            .containsExactly("member4", "member5", "member6");
+    }
+    
+    @Test
+    void searchPageSimple() {
+        MemberSearchCondition condition = new MemberSearchCondition();
+        condition.setAgeGoe(30);
+        condition.setAgeLoe(60);
+        condition.setTeamName("team2");
+        
+        Page<MemberTeamDTO> result = memberRepository.searchPageSimple(condition, PageRequest.of(0, 3));
+        
+        assertThat(result.getSize()).isEqualTo(3);
+        assertThat(result.getContent()).extracting("userName")
+                                       .containsExactly("member4", "member5", "member6");
+    }
+    
+    
+    @Test
+    void searchComplex() {
+        MemberSearchCondition condition = new MemberSearchCondition();
+        condition.setAgeGoe(30);
+        condition.setAgeLoe(60);
+        condition.setTeamName("team2");
+        
+        Page<MemberTeamDTO> result = memberRepository.searchPageComplex(condition, PageRequest.of(0, 3));
+        
+        assertThat(result.getSize()).isEqualTo(3);
+        assertThat(result.getContent()).extracting("userName")
+                                       .containsExactly("member4", "member5", "member6");
+        
+        assertEquals(3L, result.getTotalElements());
     }
 }

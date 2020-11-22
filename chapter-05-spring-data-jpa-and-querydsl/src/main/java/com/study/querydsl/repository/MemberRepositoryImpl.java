@@ -8,10 +8,14 @@ import java.util.Objects;
 
 import javax.persistence.EntityManager;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.QueryResults;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.study.querydsl.dto.MemberSearchCondition;
@@ -28,7 +32,59 @@ public class MemberRepositoryImpl implements MemberQuerydslRepository {
         this.em = em;
         this.queryFactory = new JPAQueryFactory(em); //스프링 빈으로 등록해서 처리해도됨
     }
+    
+    
    
+    @Override
+    public Page<MemberTeamDTO> searchPageSimple(MemberSearchCondition condition, Pageable pageable) {
+        QueryResults<MemberTeamDTO> results =
+        queryFactory.select(new QMemberTeamDTO(member.id, member.userName, member.age, team.id, team.name))
+                    .from(member)
+                    .leftJoin(member.team, team)
+                    .where(userNameEq(condition.getUserName()),
+                           teamNameEq(condition.getTeamName()),
+                           ageGoe(condition.getAgeGoe()),
+                           ageLoe(condition.getAgeLoe()))
+                    .offset(pageable.getOffset())
+                    .limit(pageable.getPageSize())
+                    .fetchResults();
+        
+        List<MemberTeamDTO> content = results.getResults();
+        long total = results.getTotal();
+        
+        return new PageImpl<>(content, pageable, total);
+    }
+
+    /**
+     * 데이터 가져오는 쿼리와 Total count 쿼리를 분리 - 데이터가 많을 때 최적화를 위해 사용할 것을 추천
+     */
+    @Override
+    public Page<MemberTeamDTO> searchPageComplex(MemberSearchCondition condition, Pageable pageable) {
+        List<MemberTeamDTO> content =
+        queryFactory.select(new QMemberTeamDTO(member.id, member.userName, member.age, team.id, team.name))
+                    .from(member)
+                    .leftJoin(member.team, team)
+                    .where(userNameEq(condition.getUserName()),
+                           teamNameEq(condition.getTeamName()),
+                           ageGoe(condition.getAgeGoe()),
+                           ageLoe(condition.getAgeLoe()))
+                    .offset(pageable.getOffset())
+                    .limit(pageable.getPageSize())
+                    .fetch();
+        
+        long total =
+        queryFactory.select(member)
+                    .from(member)
+                    .leftJoin(member.team, team)
+                    .where(userNameEq(condition.getUserName()),
+                           teamNameEq(condition.getTeamName()),
+                           ageGoe(condition.getAgeGoe()),
+                           ageLoe(condition.getAgeLoe()))
+                    .fetchCount();
+        
+        return new PageImpl<>(content, pageable, total);
+    }
+
     @Override
     public List<MemberTeamDTO> searchByBuilder(MemberSearchCondition condition) {
         BooleanBuilder builder = new BooleanBuilder();
