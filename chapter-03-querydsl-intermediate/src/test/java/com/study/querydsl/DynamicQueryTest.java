@@ -145,5 +145,20 @@ class DynamicQueryTest {
     private BooleanExpression allEq(String userNameCond, Integer ageCond) {
         return userNameEq(userNameCond).and(ageEq(ageCond));
     }
+    
+    
+//  BooleanBuilder를 이용하면 null 걱정 없이 체이닝이 가능하다
+//  private BooleanBuilder ageEq(Integer ageCond) {
+//      return Objects.isNull(ageCond) ? new BooleanBuilder() : new BooleanBuilder(member.age.eq(ageCond));
+//  }
+//
+//
+//  private BooleanBuilder userNameEq(String userName) {
+//      return (!StringUtils.hasText(userName)) ? new BooleanBuilder() : new BooleanBuilder(member.userName.eq(userName));
+//  }
+//    
+//  private BooleanBuilder userNameEq(String userNameCond, Integer ageCond) {
+//      return userNameEq(userNameCond).and(ageEq(ageCond))
+//  }
 
 }
