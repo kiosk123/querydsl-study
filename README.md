@@ -29,7 +29,7 @@
     - ex) 프로퍼티명이 userName일 경우 -> USER_NAME 컬럼과 매핑
  - 카멜케이스 + 언더스코어 전략을 사용하지 않을 경우 application.yml 파일 옵션에 다음과 같이 설정한다. [참고](https://www.baeldung.com/hibernate-field-naming-spring-boot)
 
-```
+```yml
 spring:
   jpa:
     hibernate:
@@ -58,7 +58,7 @@ spring:
 ![스텝1](https://github.com/kiosk123/querydsl-study/blob/master/%EC%86%8C%EC%8A%A4%ED%83%AD.png)
 ![스텝2](https://github.com/kiosk123/querydsl-study/blob/master/%EC%86%8C%EC%8A%A4%ED%8F%B4%EB%8D%94%EC%84%A0%ED%83%9D.png)
     
-```
+```gradle
 /*Querydsl build.gradle 설정*/
 plugins {
     //생략..
