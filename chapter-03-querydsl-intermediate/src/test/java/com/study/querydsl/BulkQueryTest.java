@@ -16,6 +16,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.study.querydsl.domain.Member;
 import com.study.querydsl.domain.QMember;
@@ -95,6 +96,9 @@ class BulkQueryTest {
         long count = queryFactory.update(member)
                                  .set(member.age, member.age.add(1))
                                  .execute();
+
+        em.flush();
+        em.clear(); //벌크 연산 후 항상 컨텍스트 초기화
         
         List<Integer> ages = queryFactory.select(member.age)
                                          .from(member)
@@ -112,7 +116,9 @@ class BulkQueryTest {
         long count = queryFactory.update(member)
                                  .set(member.age, member.age.add(-1))
                                  .execute();
-        
+        em.flush();
+        em.clear(); //벌크 연산 후 항상 컨텍스트 초기화
+
         List<Integer> ages = queryFactory.select(member.age)
                                          .from(member)
                                          .fetch();
@@ -128,7 +134,8 @@ class BulkQueryTest {
         long count = queryFactory.update(member)
                                  .set(member.age, member.age.multiply(2))
                                  .execute();
-        
+        em.flush();
+        em.clear(); //벌크 연산 후 항상 컨텍스트 초기화
         List<Integer> ages = queryFactory.select(member.age)
                                          .from(member)
                                          .fetch();

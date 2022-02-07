@@ -348,7 +348,7 @@ class DynamicQueryTest {
     }
     
     private BooleanExpression allEq(String userNameCond, Integer ageCond) {
-        return userNameEq(userNameCond).and(ageEq(ageCond));
+        return userNameEq(userNameCond).and(ageEq(ageCond)); //  userNameEq()이 NULL 반환시 메서드 체이닝이 되지 않는 위험이 있음
     }
 }
 ```
@@ -369,9 +369,232 @@ private BooleanBuilder allEq(String userNameCond, Integer ageCond) {
 ```
 ## 벌크 연산
 - 벌크연산 : 수정 삭제 벌크 연산
+  - 벌크 연산은 DB에 직접 수행되므로 벌크 연산 수행 후 데이터 조회시에는 `em.flush()`와 `em.clear()` 호출을 통해 영속성 컨텍스트 초기화할 것
+```java
+
+@ActiveProfiles("test")
+@SpringBootTest
+@Transactional
+class BulkQueryTest {
+
+    @Autowired
+    EntityManager em;
+    
+    @PersistenceUnit
+    EntityManagerFactory emf;
+    
+    JPAQueryFactory queryFactory;
+    
+    @BeforeEach
+    void before() {
+        queryFactory = new JPAQueryFactory(em);
+        
+        //given
+        Team team1 = new Team("team1");
+        Team team2 = new Team("team2");
+        Team team3 = new Team("team3");
+        em.persist(team1);
+        em.persist(team2);
+        em.persist(team3);
+        
+        Member member1 = new Member("member1", 10, team1);
+        Member member2 = new Member("member2", 20, team1);
+        Member member3 = new Member("member3", 30, team1);
+        Member member4 = new Member("member4", 40, team2);
+        Member member5 = new Member("member5", 50, team2);
+        Member member6 = new Member("member6", 60, null);
+        Member member7 = new Member("member7", 70, null);
+        
+        em.persist(member1);
+        em.persist(member2);
+        em.persist(member3);
+        em.persist(member4);
+        em.persist(member5);
+        em.persist(member6);
+        em.persist(member7);
+        em.flush();
+        em.clear();
+    }
+    
+    @Test
+    void bulkQuery() {
+        QMember member = QMember.member;
+        
+        long count = queryFactory.update(member)
+                                 .set(member.userName, "비회원")
+                                 .where(member.age.gt(30))
+                                 .execute();
+        em.flush();
+        em.clear(); //벌크 연산 후 항상 컨텍스트 초기화
+        
+        String userName = queryFactory.select(member.userName)
+                                      .distinct()
+                                      .from(member)
+                                      .where(member.age.gt(30))
+                                      .fetchOne();
+        
+        //30살 넘어서 비회원 처리 당한 회원수(처리된 로우의 수)
+        assertEquals(4, count);
+        assertEquals("비회원", userName);
+    }
+    
+    
+    @Test
+    void bulkAdd() {
+        QMember member = QMember.member;
+        
+        long count = queryFactory.update(member)
+                                 .set(member.age, member.age.add(1))
+                                 .execute();
+
+        em.flush();
+        em.clear(); //벌크 연산 후 항상 컨텍스트 초기화
+        
+        List<Integer> ages = queryFactory.select(member.age)
+                                         .from(member)
+                                         .fetch();
+        
+        assertEquals(7, count);
+        assertThat(ages).contains(11, 21, 31, 41, 51, 61, 71);
+    }
+    
+    
+    @Test
+    void bulkMinus() {
+        QMember member = QMember.member;
+        
+        long count = queryFactory.update(member)
+                                 .set(member.age, member.age.add(-1))
+                                 .execute();
+        em.flush();
+        em.clear(); //벌크 연산 후 항상 컨텍스트 초기화
+
+        List<Integer> ages = queryFactory.select(member.age)
+                                         .from(member)
+                                         .fetch();
+        
+        assertEquals(7, count);
+        assertThat(ages).contains(9, 19, 29, 39, 49, 59, 69);
+    }
+    
+    @Test
+    void bulkMultiply() {
+        QMember member = QMember.member;
+        
+        long count = queryFactory.update(member)
+                                 .set(member.age, member.age.multiply(2))
+                                 .execute();
+        em.flush();
+        em.clear(); //벌크 연산 후 항상 컨텍스트 초기화
+
+        List<Integer> ages = queryFactory.select(member.age)
+                                         .from(member)
+                                         .fetch();
+        
+        assertEquals(7, count);
+        assertThat(ages).contains(20, 40, 60, 80, 100, 120, 140);
+    }
+    
+    @Test
+    void bulkDelete() {
+        QMember member = QMember.member;
+        
+        long count = queryFactory.delete(member)
+                                 .where(member.age.gt(30))
+                                 .execute();
+        
+        assertEquals(4, count);
+    }
+}
+```
 
 ## SQL Function 호출
 - SQL Function 호출
   - JPA와 같이 Dialect에 등록된 Function만 호출가능
   - **기본적으로 ANSI 표준함수들은 Querydsl에서 메소드로 정의**되어 있음
   - 특정 데이터베이스에서만 사용가능한 함수나 사용자 정의 함수를 호출할 때 사용
+```java
+@ActiveProfiles("test")
+@SpringBootTest
+@Transactional
+class CallSqlFunctionTest {
+
+    @Autowired
+    EntityManager em;
+    
+    @PersistenceUnit
+    EntityManagerFactory emf;
+    
+    JPAQueryFactory queryFactory;
+    
+    @BeforeEach
+    void before() {
+        queryFactory = new JPAQueryFactory(em);
+        
+        //given
+        Team team1 = new Team("team1");
+        Team team2 = new Team("team2");
+        Team team3 = new Team("team3");
+        em.persist(team1);
+        em.persist(team2);
+        em.persist(team3);
+        
+        Member member1 = new Member("member1", 10, team1);
+        Member member2 = new Member("member2", 20, team1);
+        Member member3 = new Member("member3", 30, team1);
+        Member member4 = new Member("member4", 40, team2);
+        Member member5 = new Member("member5", 50, team2);
+        Member member6 = new Member("member6", 60, null);
+        Member member7 = new Member("member7", 70, null);
+        
+        em.persist(member1);
+        em.persist(member2);
+        em.persist(member3);
+        em.persist(member4);
+        em.persist(member5);
+        em.persist(member6);
+        em.persist(member7);
+        em.flush();
+        em.clear();
+    }
+    
+    /**
+     * 회원에서 회원 이름에서 member를 M으로 바꿔서 조회
+     */
+    @Test
+    void callSqlFunction01() {
+        QMember member = QMember.member;
+        
+        List<String> names  = queryFactory.select(
+                                                  Expressions.stringTemplate("function('replace', {0}, {1}, {2})",
+                                                  member.userName, 
+                                                  "member",
+                                                  "M"))
+                                          .from(member)
+                                          .fetch();
+        /**
+         * M1
+           M2
+           M3
+           M4
+           M5
+           M6
+           M7
+         */
+        names.forEach(System.out::println);
+    }
+    
+    
+    @Test
+    void callSqlFunction02() {
+        QMember member = QMember.member;
+        
+        List<String> names  = queryFactory.select(member.userName)
+                                          .from(member)
+                                          .where(member.userName.eq(member.userName.lower()))
+                                          //.where(member.userName.eq(Expressions.stringTemplate("function('lower',{0})", member.userName)))
+                                          .fetch();
+        names.forEach(System.out::println);
+    }
+}
+```
