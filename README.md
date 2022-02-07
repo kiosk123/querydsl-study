@@ -49,6 +49,7 @@ spring:
 - 챕터 3 : 중급 문법
 - 챕터 4 : 실무 활용
 - 챕터 5 : Spring Data Jpa와 Querydsl 혼합 사용
+- 챕터 6 : 추가사항
 
 ## 스프링 부트 2.6.x 이상 QueryDSL 버전 5.0 이상 설청
 - 첨부된 **실전Querydsl v2022-01-12.pdf** 파일을 확인
