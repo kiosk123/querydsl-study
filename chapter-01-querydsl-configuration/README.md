@@ -62,7 +62,7 @@
 
 ## Q클래스 생성
 - 프로젝트 구성 후 엔티티를 작성하고 나면 **Querydsl이 인식할 수 있는 Q클래스**를 만들어야한다.
-  - 그레이들 태스크 **other -> complieQuerydsl**을 실행한다.
+  - 그레이들 태스크 `other -> complieQuerydsl`을 실행한다.
   - gradlew를 직접 사용하려면 프로젝트 폴터에서 다음과 같이 입력한다
     - `./gradlew clean`  Q타입클래스를 비롯해서 컴파일되거나 빌드된 파일 전부다 삭제
     - `./gradlew comipleQuerydsl` Q타입클래스 생성 compileJava로도 가능함
@@ -73,9 +73,97 @@
     
     
 ## IDE에서 설정
-- **Visual Studio Code**에서는 **other -> compileQuerydsl** 태스크 실행 후 창을 리로드한다.
+- **Visual Studio Code**에서는 `other -> compileQuerydsl` 태스크 실행 후 창을 리로드한다.
 - **이클립스**에서는 Q클래스가 생성되는 디렉터리를 프로젝트의 빌드 패스에 추가해야한다
   - 프로젝트에서 오른쪽 마우스 버튼 클릭
   - Build Path -> Configure Build Path -> Source 탭 이동 후 다음 그림 순으로 설정  
   ![스텝1](./img/소스탭.png)  
   ![스텝2](./img/소스폴더선택.png)  
+
+## 테스트
+- 엔티티 클래스 생성한다.
+```java
+@Entity
+@Getter @Setter
+public class Hello {
+    
+    @Id @GeneratedValue
+    private Long id;
+}
+```
+
+- QueryDSL에서 사용하기 위해 엔티티 클래스를 컴파일한다. 
+  - gradle `other -> compileQuerydsl` 태스크를 실행한다.
+  - 성공적으로 컴파일하면 `build/generated/..`에 `Q+엔티티클래스이름`의 클래스가 생성된다  
+  ```java
+  /**
+   * QHello is a Querydsl query type for Hello
+   */
+  @Generated("com.querydsl.codegen.EntitySerializer")
+  public class QHello extends EntityPathBase<Hello> {
+  
+      private static final long serialVersionUID = 802099983L;
+  
+      public static final QHello hello = new QHello("hello");
+  
+      public final NumberPath<Long> id = createNumber("id", Long.class);
+  
+      public QHello(String variable) {
+          super(Hello.class, forVariable(variable));
+      }
+  
+      public QHello(Path<? extends Hello> path) {
+          super(path.getType(), path.getMetadata());
+      }
+  
+      public QHello(PathMetadata metadata) {
+          super(Hello.class, metadata);
+      }
+  
+  }
+  ```
+  - JUnit으로 테스트 실행
+  ```java
+  @ActiveProfiles("test")
+  @SpringBootTest
+  @Transactional
+  class QuerydslTest01 {
+  
+      @Autowired
+      EntityManager em;
+  
+      @Test
+      void queryDslTest01() {
+          Hello hello = new Hello();
+          em.persist(hello);
+  
+          JPAQueryFactory query = new JPAQueryFactory(em);
+  
+          // 생성자 파라미터로 alias가 들어감 JPQL에서 from Member m에서 m역할
+          QHello qHello = new QHello("h");
+  
+          Hello result = query.selectFrom(qHello).fetchOne();
+  
+          assertEquals(result, hello);
+          assertEquals(hello.getId(), hello.getId());
+      }
+  
+      @Test
+      void queryDslTest02() {
+          Hello hello = new Hello();
+          em.persist(hello);
+  
+          JPAQueryFactory query = new JPAQueryFactory(em);
+  
+          // hello 변수가 alias 역할
+          QHello qHello = QHello.hello;
+  
+          Hello result = query.selectFrom(qHello).fetchOne();
+  
+          assertEquals(result, hello);
+          assertEquals(hello.getId(), hello.getId());
+      }
+  }
+  ```
+
+
