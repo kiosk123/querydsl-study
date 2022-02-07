@@ -163,6 +163,20 @@ public class Hello {
           assertEquals(result, hello);
           assertEquals(hello.getId(), hello.getId());
       }
+      
+  
+      @Test
+      void queryDslTest03() {
+          Hello hello = new Hello();
+          em.persist(hello);
+  
+          JPAQueryFactory query = new JPAQueryFactory(em);
+          QHello qHello = QHello.hello;
+  
+          Hello result = query.select(qHello).from(qHello).fetchOne();
+          assertEquals(result, hello);
+          assertEquals(hello.getId(), hello.getId());
+      }
   }
   ```
 
