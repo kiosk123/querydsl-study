@@ -33,7 +33,6 @@ public class MemberRepositoryUsingCustomSupport extends Querydsl4RepositorySuppo
     
     public List<Member> basicSelectfrom() {
         return selectFrom(member)
-                .from(member)
                 .fetch();
     }
     
