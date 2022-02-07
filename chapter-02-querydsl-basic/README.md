@@ -589,5 +589,272 @@ class JoinTest {
   - `where`와 `select`(하이버네이트 기준)절 서브쿼리 지원한다.
   - **단 from 절 서브쿼리는 지원되지 않는다.(JPA스펙)**
     - `from` 절 서브쿼리는 `join`으로 **변경**하거나, 애플리케이션에서 쿼리를 2번 분리해서 실행하거나, `nativeSQL`을 사용한다.
+```java
+@ActiveProfiles("test")
+@SpringBootTest
+@Transactional
+class SubQueryTest {
+    
+    @Autowired
+    EntityManager em;
+    
+    @PersistenceUnit
+    EntityManagerFactory emf;
+    
+    JPAQueryFactory queryFactory;
+    
+    @BeforeEach
+    void before() {
+        queryFactory = new JPAQueryFactory(em);
+        
+        //given
+        Team team1 = new Team("team1");
+        Team team2 = new Team("team2");
+        Team team3 = new Team("team3");
+        em.persist(team1);
+        em.persist(team2);
+        em.persist(team3);
+        
+        Member member1 = new Member("member1", 10, team1);
+        Member member2 = new Member("member2", 20, team1);
+        Member member3 = new Member("member3", 30, team1);
+        Member member4 = new Member("member4", 40, team2);
+        Member member5 = new Member("member5", 50, team2);
+        Member member6 = new Member("member6", 60, null);
+        Member member7 = new Member("member7", 70, null);
+        
+        em.persist(member1);
+        em.persist(member2);
+        em.persist(member3);
+        em.persist(member4);
+        em.persist(member5);
+        em.persist(member6);
+        em.persist(member7);
+        em.flush();
+        em.clear();
+    }
+    
+    @Test
+    void subQueryEq() {
+        QMember member = QMember.member;
+        QMember subMember = new QMember("subMember");
+        
+        //나이가 가장 많은 회원 조회 - 서브쿼리에서는 alias가 달라야함 일반 SQL사람과 동일
+        Member findMember = queryFactory.selectFrom(member)
+                                        .where(member.age.eq(
+                                               JPAExpressions.select(subMember.age.max())
+                                                              .from(subMember)
+                                         ))
+                                        .fetchOne();
+        
+        assertEquals(70, findMember.getAge());
+        
+    }
+    
+    @Test
+    void subQueryIn() {
+        QMember member = QMember.member;
+        QMember subMember = new QMember("subMember");
+        
+        //나이가 10살 보다 많은  회원 조회 - 서브쿼리에서는 alias가 달라야함 일반 SQL사람과 동일
+        List<Member> members = queryFactory.selectFrom(member)
+                                        .where(member.age.in(
+                                               JPAExpressions.select(subMember.age)
+                                                             .from(subMember)
+                                                             .where(subMember.age.gt(10))
+                                         ))
+                                        .fetch();
+        
+        assertEquals(6, members.size());
+        assertThat(members).extracting("age")
+                           .contains(20, 30, 40, 50, 60, 70);
+        
+    }
+    
+    @Test
+    void subQuerySelectClause() {
+        QMember member = QMember.member;
+        QMember subMember = new QMember("subMember");
+        
+        /**
+         * select 절에서 서브쿼리 실행
+         * [member1, 40.0]
+         * [member2, 40.0]
+         * [member3, 40.0]
+         * [member4, 40.0]
+         * [member5, 40.0]
+         * [member6, 40.0]
+         * [member7, 40.0]
+         */
+        queryFactory.select(member.userName, JPAExpressions.select(subMember.age.avg())
+                                                           .from(subMember))
+                    .from(member)
+                    .fetch()
+                    .forEach(System.out::println);
+        
+        
+        
+    }
+}
+```
 - case문
+```java
+@ActiveProfiles("test")
+@SpringBootTest
+@Transactional
+class CaseClauseTest {
+
+    @Autowired
+    EntityManager em;
+    
+    @PersistenceUnit
+    EntityManagerFactory emf;
+    
+    JPAQueryFactory queryFactory;
+    
+    @BeforeEach
+    void before() {
+        queryFactory = new JPAQueryFactory(em);
+        
+        //given
+        Team team1 = new Team("team1");
+        Team team2 = new Team("team2");
+        Team team3 = new Team("team3");
+        em.persist(team1);
+        em.persist(team2);
+        em.persist(team3);
+        
+        Member member1 = new Member("member1", 10, team1);
+        Member member2 = new Member("member2", 20, team1);
+        Member member3 = new Member("member3", 30, team1);
+        Member member4 = new Member("member4", 40, team2);
+        Member member5 = new Member("member5", 50, team2);
+        Member member6 = new Member("member6", 60, null);
+        Member member7 = new Member("member7", 70, null);
+        
+        em.persist(member1);
+        em.persist(member2);
+        em.persist(member3);
+        em.persist(member4);
+        em.persist(member5);
+        em.persist(member6);
+        em.persist(member7);
+        em.flush();
+        em.clear();
+    }
+    
+    @Test
+    void caseClauseSimpleTest() {
+        QMember member = QMember.member;
+        
+        List<String> result = queryFactory.select(member.age.when(10).then("10살")
+                                                            .when(20).then("20살")
+                                                            .otherwise("기타"))
+                                          .from(member)
+                                          .fetch();
+        
+        result.forEach(System.out::println);
+        
+    }
+    
+    @Test
+    void caseClauseAdvanceTest() {
+        QMember member = QMember.member;
+        
+        queryFactory.select(new CaseBuilder().when(member.age.between(0, 20)).then("0~20살")
+                                             .when(member.age.between(21, 30)).then("21~30살")
+                                             .otherwise("기타"))
+                     .from(member)
+                     .fetch()
+                     .forEach(System.out::println);
+    }
+}
+```
 - 상수와 문자더하기
+```java
+@ActiveProfiles("test")
+@SpringBootTest
+@Transactional
+class ConstantAndStringConcatnTest {
+
+    @Autowired
+    EntityManager em;
+    
+    @PersistenceUnit
+    EntityManagerFactory emf;
+    
+    JPAQueryFactory queryFactory;
+    
+    @BeforeEach
+    void before() {
+        queryFactory = new JPAQueryFactory(em);
+        
+        //given
+        Team team1 = new Team("team1");
+        Team team2 = new Team("team2");
+        Team team3 = new Team("team3");
+        em.persist(team1);
+        em.persist(team2);
+        em.persist(team3);
+        
+        Member member1 = new Member("member1", 10, team1);
+        Member member2 = new Member("member2", 20, team1);
+        Member member3 = new Member("member3", 30, team1);
+        Member member4 = new Member("member4", 40, team2);
+        Member member5 = new Member("member5", 50, team2);
+        Member member6 = new Member("member6", 60, null);
+        Member member7 = new Member("member7", 70, null);
+        
+        em.persist(member1);
+        em.persist(member2);
+        em.persist(member3);
+        em.persist(member4);
+        em.persist(member5);
+        em.persist(member6);
+        em.persist(member7);
+        em.flush();
+        em.clear();
+    }
+    
+    // 상수
+    @Test
+    void constant() {
+        QMember member = QMember.member;
+        
+        List<Tuple> result = queryFactory.select(member.userName, Expressions.constant("A"))
+                                         .from(member)
+                                         .fetch();
+        /*
+         * [member1, A]
+           [member2, A]
+           [member3, A]
+           [member4, A]
+           [member5, A]
+           [member6, A]
+           [member7, A]
+         */
+        result.forEach(System.out::println);
+        
+    }
+    
+    // 문자더하기
+    @Test
+    void concat() {
+        QMember member = QMember.member;
+        
+        List<String> result = queryFactory.select(member.userName.concat("_").concat(member.age.stringValue()))
+                                          .from(member)
+                                          .fetch();
+        /*
+         * member1_10
+           member2_20
+           member3_30
+           member4_40
+           member5_50
+           member6_60
+           member7_70
+         */
+        result.forEach(System.out::println);
+    }
+}
+```

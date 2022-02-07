@@ -2,7 +2,6 @@ package com.study.querydsl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.List;
 
@@ -11,18 +10,17 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceUnit;
 import javax.transaction.Transactional;
 
+import com.querydsl.jpa.JPAExpressions;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.study.querydsl.domain.Member;
+import com.study.querydsl.domain.QMember;
+import com.study.querydsl.domain.Team;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-
-import com.querydsl.jpa.JPAExpressions;
-import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.study.querydsl.domain.Member;
-import com.study.querydsl.domain.QMember;
-import com.study.querydsl.domain.QTeam;
-import com.study.querydsl.domain.Team;
 
 @ActiveProfiles("test")
 @SpringBootTest
