@@ -1,25 +1,22 @@
 package com.study.querydsl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.study.querydsl.domain.Member;
+import com.study.querydsl.domain.QMember;
+import com.study.querydsl.domain.Team;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-
-import com.querydsl.core.NonUniqueResultException;
-import com.querydsl.core.QueryResults;
-import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.study.querydsl.domain.Member;
-import com.study.querydsl.domain.QMember;
-import com.study.querydsl.domain.Team;
 
 @ActiveProfiles("test")
 @SpringBootTest

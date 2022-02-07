@@ -72,6 +72,9 @@ public class Member {
     }
 }
 ```
+## JPLQueryFactory 특징
+- 멤버 필드 레벨로 가도 thread-safe하기 때문에 문제 없다.
+
 ## 기본 문법
 - Q타입 사용
   - **static Alias**를 사용하거나 **Alias로 사용할 값을 직접 생성자 파라미터**에 넘겨서 사용하는 것도 가능
@@ -132,6 +135,59 @@ public class Member {
   - `.like("%string")` : like '%string'
   - `.contains("string")` : like '%string%'	
   - `.startsWith("string")` : like "string%"
+  ```java
+  @ActiveProfiles("test")
+  @SpringBootTest
+  @Transactional
+  class SearchConditionTest {
+  
+      @Autowired
+      EntityManager em;
+      
+      JPAQueryFactory queryFactory;
+      
+      @BeforeEach
+      void before() {
+          queryFactory = new JPAQueryFactory(em);
+          
+          //given
+          Team team = new Team("team1");
+          em.persist(team);
+          
+          Member member1 = new Member("member1", 20, team);
+          Member member2 = new Member("member2", 30, team);
+          em.persist(member1);
+          em.persist(member2);
+          em.flush();
+          em.clear();
+      }
+      
+      @Test
+      void searchInAndCondition() {
+          QMember member = QMember.member;
+          Member findMember1 = queryFactory.select(member)
+                                          .from(member)
+                                          .where(member.userName.eq("member1")
+                                                 .and(member.age.eq(20)))
+                                          .fetchOne();
+          
+          Member findMember2 = queryFactory.selectFrom(member) //위와 결과 동일
+                                          .where(member.userName.eq("member1")
+                                                 .and(member.age.eq(20)))
+                                          .fetchOne();
+        //and의 경우 체이닝 없이 다음과 같이 가변 파라미터 형식으로 넘기면 묵시적으로 and로 인식하여 and 쿼리로 변환
+          Member findMember3 = queryFactory.selectFrom(member) 
+                                           .where(member.userName.eq("member1"), member.age.eq(20))
+                                           .fetchOne();
+          
+          assertThat("member1").isEqualTo(findMember1.getUserName());
+          assertThat(20).isEqualTo(findMember1.getAge());
+          assertEquals(findMember1, findMember2);
+          assertEquals(findMember2, findMember3);
+      }
+      
+  }
+  ```
 - 결과조회
   - `fetch()` : 리스트 조회, 데이터 없으면 빈 리스트 반환
   - `fetchOne()` : 단건 조회
@@ -140,11 +196,395 @@ public class Member {
   - `fetchFirst()` : `limit(1).fetchOne()`과 동일
   - `fetchResults()` : 페이징 포함한 객체를 반환 **total count 쿼리 추가 실행** - **페이징 쿼리가 복잡해 지면 사용하지 않을 것을 권장**
   - `fetchOunt()` : count 쿼리로 변경해서 count수 조회
+  ```java
+  @ActiveProfiles("test")
+  @SpringBootTest
+  @Transactional
+  class ResultOfInquiryTest {
+      
+      @Autowired
+      EntityManager em;
+      
+      JPAQueryFactory queryFactory;
+      
+      @BeforeEach
+      void before() {
+          queryFactory = new JPAQueryFactory(em);
+          
+          //given
+          Team team = new Team("team1");
+          em.persist(team);
+          
+          Member member1 = new Member("member1", 20, team);
+          Member member2 = new Member("member2", 30, team);
+          em.persist(member1);
+          em.persist(member2);
+          em.flush();
+          em.clear();
+      }
+      
+      @Test
+      void fetch() {
+          QMember member = QMember.member;
+          
+          //when
+          List<Member> members = queryFactory.selectFrom(member)
+                                             .fetch();
+          
+          assertEquals(2, members.size());
+      }
+      
+      @Test
+      void fetchOne() {
+          QMember member = QMember.member;
+          
+          //when
+          Member findMember = queryFactory.selectFrom(member)
+                                          .where(member.userName.eq("member1"))
+                                          .fetchOne();
+          
+          //then
+          assertEquals("member1", findMember.getUserName());
+          assertEquals(20, findMember.getAge());
+          
+          assertThrows(NonUniqueResultException.class, () -> {
+              queryFactory.selectFrom(member)
+                          .fetchOne();
+          });
+      }
+      
+      @Test
+      void fetchFirst() {
+          QMember member = QMember.member;
+          
+          //when
+          Member findMember = queryFactory.selectFrom(member)
+                                          .where(member.userName.eq("member1"))
+                                          .fetchFirst(); //limit 1 fetchone
+          
+          //then
+          assertEquals("member1", findMember.getUserName());
+          assertEquals(20, findMember.getAge());
+      }
+      
+      @Test
+      void fetchResults() {
+          QMember member = QMember.member;
+          
+          //when
+          QueryResults<Member> result = queryFactory.selectFrom(member)
+                                                    .fetchResults(); 
+          
+          List<Member> members = result.getResults();
+          assertEquals(2, members.size());
+          assertEquals(2, result.getTotal());
+          
+          System.out.println("used limit for query : " + result.getLimit());
+          System.out.println("used offset for query : " + result.getOffset());
+      }
+      
+      @Test
+      void fetchCount() {
+          QMember member = QMember.member;
+          
+          Long count = queryFactory.selectFrom(member)
+                                   .fetchCount(); 
+          
+          assertEquals(2, count);
+      }
+  }
+  ```
 - 정렬 : `orderBy`
+```java
+@ActiveProfiles("test")
+@SpringBootTest
+@Transactional
+class SortingTest {
+    
+    @Autowired
+    EntityManager em;
+    
+    JPAQueryFactory queryFactory;
+    
+    @BeforeEach
+    void before() {
+        queryFactory = new JPAQueryFactory(em);
+        
+        //given
+        Team team = new Team("team1");
+        em.persist(team);
+        
+        Member member1 = new Member("member1", 20, team);
+        Member member2 = new Member("member2", 30, team);
+        Member member3 = new Member(null, 30, team);
+        em.persist(member1);
+        em.persist(member2);
+        em.persist(member3);
+        em.flush();
+        em.clear();
+    }
+    
+    @Test
+    void sortingTest() {
+        QMember member = QMember.member;
+        List<Member> result = queryFactory.selectFrom(member)
+                                          .orderBy(member.age.desc(), member.userName.asc().nullsLast())
+                                          .fetch();
+        
+        assertEquals(3, result.size());
+        assertEquals("member2", result.get(0).getUserName());
+        assertEquals(null, result.get(1).getUserName());
+        assertEquals("member1", result.get(2).getUserName());
+    }
+}
+```
 - 페이징 : `offset`, `limit`
+```java
+@ActiveProfiles("test")
+@SpringBootTest
+@Transactional
+class PagingTest {
+    
+    @Autowired
+    EntityManager em;
+    
+    JPAQueryFactory queryFactory;
+    
+    @BeforeEach
+    void before() {
+        queryFactory = new JPAQueryFactory(em);
+        
+        //given
+        Team team = new Team("team1");
+        em.persist(team);
+        
+        Member member1 = new Member("member1", 20, team);
+        Member member2 = new Member("member2", 30, team);
+        em.persist(member1);
+        em.persist(member2);
+        em.flush();
+        em.clear();
+    }
+    
+    @Test
+    void paging() {
+        QMember member = QMember.member;
+        
+        List<Member> members = queryFactory.selectFrom(member)
+                                           .orderBy(member.userName.desc())
+                                           .offset(0) //setFirstResult
+                                           .limit(2)  //setMaxResult
+                                           .fetch();
+        assertEquals(2, members.size());
+    }
+}
+```
 - 집합 : `sum`, `count`, `avg`, `max`, `min`..., `groupBy`, `having 조건`
 - 조인
-- `fetch` 조인 : 조회대상의 연관관계 엔티티 필드까지 조회
+  - `fetch` 조인 : 조회대상의 연관관계 엔티티 필드까지 조회
+```java
+@ActiveProfiles("test")
+@SpringBootTest
+@Transactional
+class JoinTest {
+    
+    /**
+     * innerJoin(조인대상, 별칭파라미터로 사용할 Q타임)
+     * leftJoin(조인대상, 별칭파라미터로 사용할 Q타임)
+     * join(조인대상, 별칭파라미터로 사용할 Q타임)
+     * 
+     * 기본적으로 alias를 이용하는 join은 on절에 식별값 비교가 들어가기 때문에
+     * on 메소드를 활용하여 식별값 비교 조건을 추가할 필요가 없지만 (JPQL과 동일)
+     * 쎄타조인 같은 경우는 on메소드를 이용하여 미리 조인할 대상을 필터링하는 것이 중요하다.
+     */
+    @Autowired
+    EntityManager em;
+    
+    JPAQueryFactory queryFactory;
+    
+    @BeforeEach
+    void before() {
+        queryFactory = new JPAQueryFactory(em);
+        
+        //given
+        Team team1 = new Team("team1");
+        Team team2 = new Team("team2");
+        Team team3 = new Team("team3");
+        em.persist(team1);
+        em.persist(team2);
+        em.persist(team3);
+        
+        Member member1 = new Member("member1", 10, team1);
+        Member member2 = new Member("member2", 20, team1);
+        Member member3 = new Member("member3", 30, team1);
+        Member member4 = new Member("member4", 40, team2);
+        Member member5 = new Member("member5", 50, team2);
+        Member member6 = new Member("member6", 60, null);
+        Member member7 = new Member("team3", 60, null);
+        
+        em.persist(member1);
+        em.persist(member2);
+        em.persist(member3);
+        em.persist(member4);
+        em.persist(member5);
+        em.persist(member6);
+        em.persist(member7);
+        em.flush();
+        em.clear();
+    }
+    
+    @Test
+    void innerJoin() {
+        QMember member = QMember.member;
+        QTeam team = QTeam.team;
+        
+        List<Member> result = queryFactory.select(member)
+                                          .from(member)
+                                          .innerJoin(member.team, team)
+                                          .where(team.name.eq("team1"))
+                                          .fetch();
+        
+        assertEquals(3, result.size());
+        result.forEach(m -> {
+            if (!m.getTeam().getName().equals("team1")) {
+                fail(m.getUserName() + " not in team1");
+            }
+        });
+    }
+    
+    @Test 
+    void innerJoinFilteringUsingOn() {
+        // on절을 사용해서 조인 대상을 필터링 한 후 조인할 수 있다.
+        QMember member = QMember.member;
+        QTeam team = QTeam.team;
+        
+        List<Member> result = queryFactory.select(member)
+                                         .from(member)
+                                         .innerJoin(member.team, team)
+                                         .on(team.name.eq("team1"))
+                                         .fetch();        
+        
+        assertEquals(3, result.size());
+        result.forEach(m -> {
+            if (!m.getTeam().getName().equals("team1")) {
+                fail(m.getUserName() + " not in team1");
+            }
+        });
+    }
+    
+    @Test
+    void leftJoin() {
+        QMember member = QMember.member;
+        QTeam team = QTeam.team;
+        
+        //team1에 속하지 않은 사람 조회
+        List<Member> result = queryFactory.select(member)
+                                         .from(member)
+                                         .leftJoin(member.team, team)
+                                         .where(team.name.ne("team1")
+                                         .or(team.name.isNull()))
+                                         .fetch();
+        assertEquals(4, result.size());
+        
+        assertThat(result).extracting("userName")
+                          .containsExactly("member4", "member5", "member6", "team3");
+    }
+    
+    @Test
+    void leftJoinFilteringUsingOn() {
+        /**
+         * 팀 이름이 team1인 팀만 조인, 회원은 모두 조회
+         */
+        QMember member = QMember.member;
+        QTeam team = QTeam.team;
+        
+        //팀이름이 팀 team1만 조인 회원은 모두 조회
+        List<Tuple> result = queryFactory.select(member, team)
+                                          .from(member)
+                                          .leftJoin(member.team, team)
+                                          .on(team.name.eq("team1"))
+                                          .fetch();
+        /**
+         * Tuple로 Tuple.get(1, Team.class)로 Projection된 팀을 조회했을 때
+         * member가 team1인 아닌 Tuple값인 team은 null이된다. 
+         * 
+         * leftJoinFilteringUsingOn tuple : [Member(id=4, userName=member1, age=10), Team(id=1, name=team1)]
+         * leftJoinFilteringUsingOn tuple : [Member(id=5, userName=member2, age=20), Team(id=1, name=team1)]
+         * leftJoinFilteringUsingOn tuple : [Member(id=6, userName=member3, age=30), Team(id=1, name=team1)]
+         * leftJoinFilteringUsingOn tuple : [Member(id=7, userName=member4, age=40), null]
+         * leftJoinFilteringUsingOn tuple : [Member(id=8, userName=member5, age=50), null]
+         * leftJoinFilteringUsingOn tuple : [Member(id=9, userName=member6, age=60), null]
+         * leftJoinFilteringUsingOn tuple : [Member(id=10, userName=team3, age=60), null]
+         */
+
+        result.forEach(t -> System.out.println("leftJoinFilteringUsingOn tuple : " + t));
+    }
+    
+    // 라이트 조인
+    @Test
+    void rightJoin() {
+        QMember member = QMember.member;
+        QTeam team = QTeam.team;
+        
+        //아무런 멤버도 없는 팀조회
+        List<Team> result = queryFactory.select(team)
+                                        .from(member)
+                                        .rightJoin(member.team, team)
+                                        .where(team.members.size().eq(0))
+                                        .fetch();
+        assertEquals(1, result.size());
+        
+        assertThat(result).extracting("name")
+                          .containsExactly("team3");
+    }
+    
+    // 쎄타 조인
+    @Test
+    void thetaJoin() {
+        QMember member = QMember.member;
+        QTeam team = QTeam.team;
+        
+        Member findMember = queryFactory.select(member)
+                                        .from(member, team)
+                                        .where(member.userName.eq(team.name))
+                                        .fetchOne();
+        
+        assertEquals("team3", findMember.getUserName());
+    }
+    
+    // 쎄타 아우터 조인
+    @Test
+    void thetaOuterJoin() {
+        QMember member = QMember.member;
+        QTeam team = QTeam.team;
+        
+        /**
+         * 이때 alias를 뺀다 alias를 넣으면
+         * 조인대상에 식별값이 들어가서 식별값으로 매칭하지만
+         * alias를 빼면 이름으로만 조인하여 조인대상이 필터링하기 때문에
+         * 쎄타 외부 조인은 이렇게 해야한다.
+         */
+        List<Tuple> result = queryFactory.select(member, team)
+                                         .from(member)
+                                         .leftJoin(team) 
+                                         .on(member.userName.eq(team.name))
+                                         .fetch();
+        
+       assertEquals(7, result.size());
+       
+       /**
+        * thetaOuterJoin tuple : [Member(id=54, userName=member1, age=10), null]
+        * thetaOuterJoin tuple : [Member(id=55, userName=member2, age=20), null]
+        * thetaOuterJoin tuple : [Member(id=56, userName=member3, age=30), null]
+        * thetaOuterJoin tuple : [Member(id=57, userName=member4, age=40), null]
+        * thetaOuterJoin tuple : [Member(id=58, userName=member5, age=50), null]
+        * thetaOuterJoin tuple : [Member(id=59, userName=member6, age=60), null]
+        * thetaOuterJoin tuple : [Member(id=60, userName=team3, age=60), Team(id=53, name=team3)]
+        */
+       result.forEach(t -> System.out.println("thetaOuterJoin tuple : " + t));
+    }
+}
+```
 - 서브쿼리 : `JPAExpressions` 활용
   - `where`와 `select`(하이버네이트 기준)절 서브쿼리 지원한다.
   - **단 from 절 서브쿼리는 지원되지 않는다.(JPA스펙)**
