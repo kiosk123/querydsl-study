@@ -76,8 +76,8 @@ compileQuerydsl {
 # PageableExecutionUtils Deprecated(향후 미지원) 패키지 변경
 `PageableExecutionUtils` 클래스 사용 패키지 변경  
 기능이 Deprecated 된 것은 아니고, 사용 패키지 위치가 변경됨. 기존 위치를 신규 위치로 변경해주시면 문제 없이 사용할 수 있음  
-기존: `org.springframework.data.repository.support.PageableExecutionUtils`  
-신규: `org.springframework.data.support.PageableExecutionUtils`  
+**기존**: `org.springframework.data.repository.support.PageableExecutionUtils`  
+**신규**: `org.springframework.data.support.PageableExecutionUtils`  
 
 # Querydsl `fetchResults()` , `fetchCount()` Deprecated(향후 미지원)
 Querydsl의 `fetchCount()` , `fetchResult()` 는 개발자가 작성한 select 쿼리를 기반으로 count용쿼리를 내부에서 만들어서 실행.  
