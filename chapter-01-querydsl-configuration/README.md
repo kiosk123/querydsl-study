@@ -59,7 +59,7 @@
         options.annotationProcessorPath = configurations.querydsl
     }
     ```
-    - `application.yml`은 다음과 같다
+    - `application.yml` 설정은 다음과 같다
     ```yml
     spring:
       datasource:
