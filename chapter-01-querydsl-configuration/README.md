@@ -1,0 +1,81 @@
+# 프로젝트 구성
+ - [Spring Initializr](https://start.spring.io/)에서 스프링 부트 기본 프로젝트를 구성한다.
+ - **Querydsl은 오픈소스 프로젝트이므로 다운받은 프로젝트에서 별도의 구성이 필요한다.**
+    - **아래의 querydsl `build.gradle` 설정을 참고하라**
+    ```gradle
+    plugins {
+        id 'org.springframework.boot' version '2.4.0'
+        id 'io.spring.dependency-management' version '1.0.10.RELEASE'
+        
+        //querydsl gradle 플러그인
+        id "com.ewerk.gradle.plugins.querydsl" version "1.0.10"
+        id 'java'
+    }
+
+    group = 'com.study.querydsl'
+    version = '0.0.1-SNAPSHOT'
+
+    configurations {
+        compileOnly {
+            extendsFrom annotationProcessor
+        }
+    }
+
+    dependencies {
+        implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.5.6' //운영에서는 사용하지 말 것
+        implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+        implementation 'org.springframework.boot:spring-boot-starter-web'
+        
+        //querydsl 추가
+        implementation 'com.querydsl:querydsl-jpa'
+        
+        compileOnly 'org.projectlombok:lombok'
+        developmentOnly 'org.springframework.boot:spring-boot-devtools'
+        runtimeOnly 'com.h2database:h2'
+        annotationProcessor 'org.projectlombok:lombok'
+        testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    }
+
+    test {
+        useJUnitPlatform()
+    }
+
+    //querydsl 추가 시작
+    def querydslDir = "$buildDir/generated/querydsl"
+
+    querydsl {
+        jpa = true
+        querydslSourcesDir = querydslDir
+    }
+    sourceSets {
+        main.java.srcDir querydslDir
+    }
+
+    configurations {
+        querydsl.extendsFrom compileClasspath
+    }
+
+    compileQuerydsl {
+        options.annotationProcessorPath = configurations.querydsl
+    }
+    ```
+
+## Q클래스 생성
+- 프로젝트 구성 후 엔티티를 작성하고 나면 **Querydsl이 인식할 수 있는 Q클래스**를 만들어야한다.
+  - 그레이들 태스크 **other -> complieQuerydsl**을 실행한다.
+  - gradlew를 직접 사용하려면 프로젝트 폴터에서 다음과 같이 입력한다
+    - `./gradlew clean`  Q타입클래스를 비롯해서 컴파일되거나 빌드된 파일 전부다 삭제
+    - `./gradlew comipleQuerydsl` Q타입클래스 생성 compileJava로도 가능함
+
+- **참고로 querydsl용으로 생성된 Q클래스는 계속 변화될 가능성이 높기 때문에 git 커밋 하지 말것을 권장** 
+  - **.gitignore에 build 폴더를 예외대상으로하고 Q타입 클래스는 build폴더에서 생성해서 사용하는 것을 권장**
+  - **다른 디렉터리에 빌드할꺼면 그 폴더자체를 .gitignore 대상으로 해야한다**
+    
+    
+## IDE에서 설정
+- **Visual Studio Code**에서는 **other -> compileQuerydsl** 태스크 실행 후 창을 리로드한다.
+- **이클립스**에서는 Q클래스가 생성되는 디렉터리를 프로젝트의 빌드 패스에 추가해야한다
+  - 프로젝트에서 오른쪽 마우스 버튼 클릭
+  - Build Path -> Configure Build Path -> Source 탭 이동 후 다음 그림 순으로 설정  
+  ![스텝1](./img/소스탭.png)  
+  ![스텝2](./img/소스폴더선택.png)  
