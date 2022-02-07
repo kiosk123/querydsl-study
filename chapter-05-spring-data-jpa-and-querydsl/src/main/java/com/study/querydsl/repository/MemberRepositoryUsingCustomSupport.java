@@ -6,17 +6,17 @@ import static com.study.querydsl.domain.QTeam.team;
 import java.util.List;
 import java.util.Objects;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.support.PageableExecutionUtils;
-import org.springframework.stereotype.Repository;
-import org.springframework.util.StringUtils;
-
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.study.querydsl.domain.Member;
 import com.study.querydsl.dto.MemberSearchCondition;
 import com.study.querydsl.repository.support.Querydsl4RepositorySupport;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.support.PageableExecutionUtils;
+import org.springframework.stereotype.Repository;
+import org.springframework.util.StringUtils;
 
 @Repository
 public class MemberRepositoryUsingCustomSupport extends Querydsl4RepositorySupport{
