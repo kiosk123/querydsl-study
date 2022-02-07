@@ -13,6 +13,10 @@
 * [POSTMAN](https://www.postman.com/)
 * [Katalon](https://www.katalon.com/)
 
+## 현재 프로젝트의 의존관계 보기 gradlew 이용
+```bash
+./gradlew dependencies —configuration compileClasspath
+```
 ## 참고사이트
  - [Spring 가이드 문서](https://spring.io/guides)
  - [Spring Boot 참고 문서](https://docs.spring.io/spring-boot/docs/)

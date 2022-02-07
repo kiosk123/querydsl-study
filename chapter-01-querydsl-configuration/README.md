@@ -124,6 +124,22 @@ public class Hello {
   ```
   - JUnit으로 테스트 실행
   ```java
+  package com.study.querydsl;
+
+  import static org.junit.jupiter.api.Assertions.assertEquals;
+  
+  import javax.persistence.EntityManager;
+  import javax.transaction.Transactional;
+  
+  import org.junit.jupiter.api.Test;
+  import org.springframework.beans.factory.annotation.Autowired;
+  import org.springframework.boot.test.context.SpringBootTest;
+  import org.springframework.test.context.ActiveProfiles;
+  
+  import com.querydsl.jpa.impl.JPAQueryFactory;
+  import com.study.querydsl.domain.Hello;
+  import com.study.querydsl.domain.QHello;
+
   @ActiveProfiles("test")
   @SpringBootTest
   @Transactional
