@@ -1,4 +1,6 @@
 # 중급 문법
+
+## 프로젝션
 - 프로젝션
   - `일반타입`, `Tuple`, `DTO` 방식으로 조회 
     - `@QueryProjection` 활용 : `Projections.constructor`가 런타임에서 오류를 발견할 수 있는 반면에 `@QueryProjection`은 컴파일 타임에 오류를 발견할 수 있음
@@ -211,6 +213,14 @@
       }
   }
   ```
+  -- `distinct` 처리
+  ```java
+  List<String> result = queryFactory 
+        .select(member.username).distinct() 
+        .from(member) 
+        .fetch();
+  ```
+## 동적쿼리 
 - 동적쿼리
   - `BooleanBuilder`
   - where 다중 파라미터
@@ -357,7 +367,10 @@ private BooleanBuilder allEq(String userNameCond, Integer ageCond) {
     return userNameEq(userNameCond).and(ageEq(ageCond))
 }
 ```
+## 벌크 연산
 - 벌크연산 : 수정 삭제 벌크 연산
+
+## SQL Function 호출
 - SQL Function 호출
   - JPA와 같이 Dialect에 등록된 Function만 호출가능
   - **기본적으로 ANSI 표준함수들은 Querydsl에서 메소드로 정의**되어 있음
