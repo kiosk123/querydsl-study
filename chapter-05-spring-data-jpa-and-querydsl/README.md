@@ -14,7 +14,7 @@
 
 `MemberRepository` Spring Data JPA 리포지토리
 ```java
-public interface MemberRepository extends JpaRepository<Member, Long>, MemberRepositoryCustom, QuerydslPredicateExecutor<Member> {
+public interface MemberRepository extends JpaRepository<Member, Long>, MemberRepositoryCustom {
     List<Member> findByUserName(String userName);
 }
 ```
@@ -406,14 +406,258 @@ public class MemberController {
   - **묵시적 조인은 가능하지만 left join이 불가능하다**
   - **클라이언트가 Querydsl에 의존해야한다. 서비스 클래스가 Querydsl이라는 구현 기술에 의존해야한다**
   - **실무의 복잡한 환경에서 한계가 있음**
+  - 참고 : `QuerydslPredicateExecutor` 는 `Pagable`, `Sort`를 모두 지원하고 정상 동작한다.
+  ```java
+  /*리포지토리에 적용*/
+  interface MemberRepository extends JpaRepository<User, Long>, QuerydslPredicateExecutor<User> { 
+
+  }
+  ```
+  ```java
+  Iterable result = memberRepository.findAll( member.age.between(10, 40) 
+                                    .and(member.username.eq("member1")));
+  ```
 - [Querydsl Web](https://docs.spring.io/spring-data/jpa/docs/2.2.3.RELEASE/reference/html/#core.web.type-safe)
   - **단순 조건만 가능**
   - **컨트롤러가 Querydsl에 의존**
-- QuerydslRepositorySupport
-  - 스프링 데이터가 제공하는 페이징을 편리하게 변환 - **(단!Sort는 오류 발생)**
-  - 페이징과 카운트 쿼리 분리 가능
-  - 스프링 데이터 Sort 지원
-  - select() , selectFrom() 으로 시작 가능
-  - EntityManager , QueryFactory 제공
-  - **Querydsl3.x버전 대상으로 만들었으며 스프링 데이터 Sort기능이 정상 동작하지 않음**
+- **QuerydslRepositorySupport**
+  - 장점
+    - `getQuerydsl().applyPagination()` 스프링 데이터가 제공하는 페이징을 `Querydsl`로 편리하게 변환 가능 **(단! Sort는 오류발생)**  
+    - `from()` 으로 시작 가능(최근에는 `QueryFactory`를 사용해서 `select()` 로 시작하는 것이 더 명시적) `EntityManager` 제공
+  - 한계
+    - Querydsl 3.x 버전을 대상으로 만듬
+    - Querydsl 4.x에 나온 JPAQueryFactory로 시작할 수 없음
+      - select로 시작할 수 없음 (from으로 시작해야함)
+    - QueryFactory 를 제공하지 않음
+    - **스프링 데이터 Sort 기능이 정상 동작하지 않음**
+    ```java
+    import static com.study.querydsl.domain.QMember.member;
+    import static com.study.querydsl.domain.QTeam.team;
+    
+    //...
+    
+    /**
+     * 엔티티 매니저 알아서 주입해줌
+     * 엔티티 매니저 호출시 getEntityManager() 호출
+     */
+    @Repository
+    public class MemberQuerydslRepositorySupport extends QuerydslRepositorySupport {
+    
+        public MemberQuerydslRepositorySupport() {
+            super(Member.class);
+        }
+        
+        public List<MemberTeamDTO> search(MemberSearchCondition condition) {
+            return from(member)
+                    .leftJoin(member.team, team)
+                    .from(member)
+                    .leftJoin(member.team, team)
+                    .where(userNameEq(condition.getUserName()), 
+                           teamNameEq(condition.getTeamName()),
+                           ageGoe(condition.getAgeGoe()), 
+                           ageLoe(condition.getAgeLoe()))
+                    .select(new QMemberTeamDTO(member.id, member.userName, member.age, team.id, team.name))
+                    .fetch();
+        }
+        
+        public Page<MemberTeamDTO> searchPaging(MemberSearchCondition condition, Pageable pageable) {
+            JPQLQuery<MemberTeamDTO> query =
+                from(member)
+                .leftJoin(member.team, team)
+                .from(member)
+                .leftJoin(member.team, team)
+                .where(userNameEq(condition.getUserName()), 
+                       teamNameEq(condition.getTeamName()),
+                       ageGoe(condition.getAgeGoe()), 
+                       ageLoe(condition.getAgeLoe()))
+                .select(new QMemberTeamDTO(member.id, member.userName, member.age, team.id, team.name));
+           
+            /* 페이징 처리 부분 */
+            query = getQuerydsl().applyPagination(pageable, query);
+            QueryResults<MemberTeamDTO> results = query.fetchResults();
+            
+            return new PageImpl<>(results.getResults(), pageable, results.getTotal());
+        }
+        
+    
+        private BooleanExpression ageLoe(Integer ageLoe) {
+            return Objects.isNull(ageLoe) ? null : member.age.loe(ageLoe);
+        }
+    
+        private BooleanExpression ageGoe(Integer ageGoe) {
+            return Objects.isNull(ageGoe) ? null : member.age.goe(ageGoe);
+        }
+    
+        private BooleanExpression teamNameEq(String teamName) {
+            return (!StringUtils.hasText(teamName)) ? null : team.name.eq(teamName);
+        }
+    
+        private BooleanExpression userNameEq(String userName) {
+            return (!StringUtils.hasText(userName)) ? null : member.userName.eq(userName);
+        }
+    
+    }
+    ```
 - Querydsl지원 클래스를 직접만들기
+```java
+/**
+ * Querydsl 4.x 버전에 맞춘 Querydsl 지원 라이브러리
+ *
+ * @author Younghan Kim
+ * @see org.springframework.data.jpa.repository.support.QuerydslRepositorySupport
+ */
+@Repository
+public abstract class Querydsl4RepositorySupport {
+    private final Class domainClass;
+    private Querydsl querydsl;
+    private EntityManager entityManager;
+    private JPAQueryFactory queryFactory;
+
+    public Querydsl4RepositorySupport(Class<?> domainClass) {
+        Assert.notNull(domainClass, "Domain class must not be null!");
+        this.domainClass = domainClass;
+    }
+
+    @Autowired
+    public void setEntityManager(EntityManager entityManager) {
+        Assert.notNull(entityManager, "EntityManager must not be null!");
+        //동적 Sort(정렬) 관련 코드
+        JpaEntityInformation entityInformation = 
+                JpaEntityInformationSupport.getEntityInformation(domainClass, entityManager);
+        SimpleEntityPathResolver resolver = SimpleEntityPathResolver.INSTANCE;
+        EntityPath path = resolver.createPath(entityInformation.getJavaType());
+        this.entityManager = entityManager;
+        this.querydsl = new Querydsl(entityManager, new PathBuilder<>(path.getType(), path.getMetadata()));
+        this.queryFactory = new JPAQueryFactory(entityManager);
+    }
+
+    @PostConstruct
+    public void validate() {
+        Assert.notNull(entityManager, "EntityManager must not be null!");
+        Assert.notNull(querydsl, "Querydsl must not be null!");
+        Assert.notNull(queryFactory, "QueryFactory must not be null!");
+    }
+
+    protected JPAQueryFactory getQueryFactory() {
+        return queryFactory;
+    }
+
+    protected Querydsl getQuerydsl() {
+        return querydsl;
+    }
+
+    protected EntityManager getEntityManager() {
+        return entityManager;
+    }
+
+    protected <T> JPAQuery<T> select(Expression<T> expr) {
+        return getQueryFactory().select(expr);
+    }
+
+    protected <T> JPAQuery<T> selectFrom(EntityPath<T> from) {
+        return getQueryFactory().selectFrom(from);
+    }
+
+    protected <T> Page<T> applyPagination(Pageable pageable, Function<JPAQueryFactory, JPAQuery> contentQuery) {
+        JPAQuery jpaQuery = contentQuery.apply(getQueryFactory());
+        List<T> content = getQuerydsl().applyPagination(pageable, jpaQuery).fetch();
+        return PageableExecutionUtils.getPage(content, pageable, jpaQuery::fetchCount);
+    }
+
+    protected <T> Page<T> applyPagination(Pageable pageable, Function<JPAQueryFactory, JPAQuery> contentQuery,
+            Function<JPAQueryFactory, JPAQuery> countQuery) {
+        JPAQuery jpaContentQuery = contentQuery.apply(getQueryFactory());
+        List<T> content = getQuerydsl().applyPagination(pageable, jpaContentQuery).fetch();
+        JPAQuery countResult = countQuery.apply(getQueryFactory());
+        return PageableExecutionUtils.getPage(content, pageable, countResult::fetchCount);
+    }
+}
+```
+- `Querydsl4RepositorySupport` 상속
+```java
+@Repository
+public class MemberRepositoryUsingCustomSupport extends Querydsl4RepositorySupport{
+
+    public MemberRepositoryUsingCustomSupport() {
+        super(Member.class);
+    }
+    
+    public List<Member> basicSelect() {
+        return select(member)
+                .from(member)
+                .fetch();
+    }
+    
+    public List<Member> basicSelectfrom() {
+        return selectFrom(member)
+                .from(member)
+                .fetch();
+    }
+    
+    /**
+     * 기존의 querydsl을 사용해서 데이터를 가져오는 방식
+     */
+    public Page<Member> searchPageByApplyPage(MemberSearchCondition condition, Pageable pageable) {
+        JPAQuery<Member> query = selectFrom(member)
+                                .where(userNameEq(condition.getUserName()),
+                                       teamNameEq(condition.getTeamName()),
+                                       ageGoe(condition.getAgeGoe()),
+                                       ageLoe(condition.getAgeLoe()));
+        List<Member> content = getQuerydsl().applyPagination(pageable, query).fetch();
+        return PageableExecutionUtils.getPage(content, pageable, query::fetchCount);
+    }
+    
+    /**
+     * 커스텀 Support를 사용해서 데이터를 가져오는 방식
+     */
+    public Page<Member> applyPagination(MemberSearchCondition condition, Pageable pageable) {
+        return applyPagination(pageable, query -> 
+                    query
+                    .selectFrom(member)
+                    .where(userNameEq(condition.getUserName()),
+                           teamNameEq(condition.getTeamName()),
+                           ageGoe(condition.getAgeGoe()),
+                           ageLoe(condition.getAgeLoe()))
+                );
+    }
+    
+    /**
+     * 커스텀 Support를 사용해서 데이터를 가져오는 방식 counter 쿼리 분리
+     */
+    public Page<Member> applyPagination2(MemberSearchCondition condition, Pageable pageable) {
+        return applyPagination(pageable, query -> 
+                    query
+                    .selectFrom(member)
+                    .where(userNameEq(condition.getUserName()),
+                           teamNameEq(condition.getTeamName()),
+                           ageGoe(condition.getAgeGoe()),
+                           ageLoe(condition.getAgeLoe())),
+                    
+                    countQuery -> 
+                    countQuery
+                    .select(member)
+                    .from(member)
+                    .leftJoin(member.team, team)
+                    .where(userNameEq(condition.getUserName()), 
+                           teamNameEq(condition.getTeamName()),
+                           ageGoe(condition.getAgeGoe()), 
+                           ageLoe(condition.getAgeLoe())));
+    }
+    
+    private BooleanExpression ageLoe(Integer ageLoe) {
+        return Objects.isNull(ageLoe) ? null : member.age.loe(ageLoe);
+    }
+
+    private BooleanExpression ageGoe(Integer ageGoe) {
+        return Objects.isNull(ageGoe) ? null : member.age.goe(ageGoe);
+    }
+
+    private BooleanExpression teamNameEq(String teamName) {
+        return (!StringUtils.hasText(teamName)) ? null : team.name.eq(teamName);
+    }
+
+    private BooleanExpression userNameEq(String userName) {
+        return (!StringUtils.hasText(userName)) ? null : member.userName.eq(userName);
+    }
+}
+``` 
