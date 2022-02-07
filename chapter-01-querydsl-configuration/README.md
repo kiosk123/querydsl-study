@@ -59,6 +59,33 @@
         options.annotationProcessorPath = configurations.querydsl
     }
     ```
+    - `application.yml`은 다음과 같다
+    ```yml
+    spring:
+      datasource:
+        url: jdbc:h2:tcp://localhost/~/querydsl
+        
+        username: sa
+        password: 
+        driver-class-name: org.h2.Driver
+        
+      jpa:
+        hibernate:
+          ddl-auto: create-drop
+        properties:
+          hibernate:
+    #        show_sql: true # System.out을 통해 출력
+            format_sql: true
+            use_sql_comments: true
+            dialect: org.hibernate.dialect.H2Dialect
+            default_batch_fetch_size: 100
+
+    logging:
+      level:
+        org.hibernate.SQL: debug #logger를 통해 출력
+        org.hibernate.type: trace #SQL 쿼리 파라미터를 확인할 수 있다
+    ```
+
 
 ## Q클래스 생성
 - 프로젝트 구성 후 엔티티를 작성하고 나면 **Querydsl이 인식할 수 있는 Q클래스**를 만들어야한다.
