@@ -6,18 +6,9 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceUnit;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.Projections;
-import com.querydsl.core.types.dsl.CaseBuilder;
-import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.study.querydsl.domain.Member;
@@ -26,6 +17,14 @@ import com.study.querydsl.domain.Team;
 import com.study.querydsl.dto.MemberDTO;
 import com.study.querydsl.dto.QMemberDTO;
 import com.study.querydsl.dto.UserDTO;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 
 @ActiveProfiles("test")
 @SpringBootTest
@@ -71,6 +70,7 @@ class ProjectionTest {
         em.clear();
     }
     
+    @DisplayName("컬럼 하나만 프로젝션")
     @Test
     void projectionTargetOne() {
         QMember member = QMember.member;
@@ -83,6 +83,7 @@ class ProjectionTest {
         
     }
     
+    @DisplayName("컬럼 하나여러개 프로젝션 Tuple 사용")
     @Test
     void projectionTargets() {
         QMember member = QMember.member;
@@ -92,11 +93,12 @@ class ProjectionTest {
                                          .fetch();
         
         result.forEach(t -> {
-            System.out.println("userName : " + t.get(member.userName) + ", age : " + t.get(member.age));
-            System.out.println("userName : " + t.get(0, String.class) + ", age : " + t.get(1, Integer.class));
+            System.out.println("userName : " + t.get(member.userName) + ", age : " + t.get(member.age)); // Q타입 클래스의 프로퍼티를 이용하여 값을 가져오기
+            System.out.println("userName : " + t.get(0, String.class) + ", age : " + t.get(1, Integer.class)); // 위치와 타입으로 값 가져오기
         });
     }
     
+    @DisplayName("Projections를 이용하여 DTO로 프로젝션")
     @Test
     void projectionUsingDTO() {
         QMember member = QMember.member;
@@ -105,7 +107,7 @@ class ProjectionTest {
         
         /**
          * 인스턴스 생성후(디폴트 생성자 필수)
-         * Projections.bean 사용시 settter 로 접근하여 DTO에 값 설정
+         * Projections.bean 사용시 setter 메서드로 접근하여 DTO에 값 설정
          * Q타입 프로퍼티 명과 DTO 필드명 일치해야함
          */
         List<MemberDTO> result = queryFactory.select(Projections.bean(MemberDTO.class, 
@@ -120,7 +122,7 @@ class ProjectionTest {
         
         
         /**
-         * Projections.fields 사용시 settter 접근이 아닌 필드에 바로 접근하여 DTO에 값 세팅
+         * Projections.fields 사용시 setter 메서드로 접근이 아닌 필드에 바로 접근하여 DTO에 값 세팅
          * Q타입 프로퍼티 명과 DTO 필드명 일치해야함
          */
         result = queryFactory.select(Projections.fields(MemberDTO.class, 
@@ -148,12 +150,13 @@ class ProjectionTest {
         });
         
         /**
+         * Projections.fields 사용시
          * DTO와 Q타입의 프로퍼티명이 일치하지 않을때 as메소드를 활용하여 값을 설정한 DTO 프로퍼티이름으로 별칭을 설정해야함
          * 프로퍼티 명이 일치 하지 않은 DTO의 프로퍼티는 null로 세팅됨
          */
-        List<UserDTO> result2 = queryFactory.select(Projections.constructor(UserDTO.class, 
-                                                                            member.userName.as("name"), 
-                                                                            member.age))
+        List<UserDTO> result2 = queryFactory.select(Projections.fields(UserDTO.class, 
+                                                                       member.userName.as("name"), 
+                                                                       member.age))
                                             .from(member)
                                             .fetch();
         
@@ -163,7 +166,7 @@ class ProjectionTest {
 
         
         /**
-         * 서브쿼레에 alias를 설정후 DTO로 값을 설정할 수도 있다.
+         * ExpressionUtils.as를 이용하여 서브쿼리에 alias를 설정후 DTO로 값을 설정할 수도 있다.
          */
         result2 = queryFactory.select(Projections.constructor(UserDTO.class, 
                                                               member.userName.as("name"), 
@@ -189,6 +192,7 @@ class ProjectionTest {
 
     }
     
+    @DisplayName("@QueryProjection를 이용한 DTO 프로젝션")
     @Test
     void queryProjection() {
         QMember member = QMember.member;

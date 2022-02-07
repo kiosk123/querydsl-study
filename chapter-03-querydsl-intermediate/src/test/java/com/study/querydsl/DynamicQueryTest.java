@@ -9,6 +9,7 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceUnit;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -66,6 +67,7 @@ class DynamicQueryTest {
         em.clear();
     }
     
+    @DisplayName("BooleanBuilder를 활용한 동적 쿼리")
     @Test
     void booleanBuilder() {
         String userNameParam = "member1";
@@ -99,6 +101,7 @@ class DynamicQueryTest {
                            .fetch();
     }
     
+    @DisplayName("where 다중 파라미터 동적 쿼리")
     @Test
     void whereMultiParams() {
         String userNameParam = "member1";
@@ -157,7 +160,7 @@ class DynamicQueryTest {
 //      return (!StringUtils.hasText(userName)) ? new BooleanBuilder() : new BooleanBuilder(member.userName.eq(userName));
 //  }
 //    
-//  private BooleanBuilder userNameEq(String userNameCond, Integer ageCond) {
+//  private BooleanBuilder allEq(String userNameCond, Integer ageCond) {
 //      return userNameEq(userNameCond).and(ageEq(ageCond))
 //  }
 
