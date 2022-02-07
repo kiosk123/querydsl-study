@@ -87,6 +87,37 @@ public class MemberRepository {
     }
 
 }
+
+
+
+```
+
+## JPAQueryFactory를 Bean으로 만들어서 한번에 주입도 가능
+```java
+@SpringBootApplication
+@EnableJpaAuditing
+public class StartApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(StartApplication.class, args);
+	}
+		
+	@Bean
+	JPAQueryFactory jpaQueryFactory(EntityManager em) {
+	    return new JPAQueryFactory(em);
+	}
+}
+
+```java
+@Repository
+public class MemberRepository {
+    
+    private final JPAQueryFactory queryFactory;
+    
+    public MemberRepository(JPAQueryFactory queryFactory) {
+        this.queryFactory = queryFactory 
+    }
+    
 ```
 ## 조회 API 컨트롤러
 - MemberController

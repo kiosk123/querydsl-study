@@ -7,6 +7,6 @@ import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 
 import com.study.querydsl.domain.Member;
 
-public interface MemberRepository extends JpaRepository<Member, Long>, MemberQuerydslRepository, QuerydslPredicateExecutor<Member> {
+public interface MemberRepository extends JpaRepository<Member, Long>, MemberRepositoryCustom, QuerydslPredicateExecutor<Member> {
     List<Member> findByUserName(String userName);
 }

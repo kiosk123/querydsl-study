@@ -8,7 +8,7 @@ import org.springframework.data.domain.Pageable;
 import com.study.querydsl.dto.MemberSearchCondition;
 import com.study.querydsl.dto.MemberTeamDTO;
 
-public interface MemberQuerydslRepository {
+public interface MemberRepositoryCustom {
     List<MemberTeamDTO> searchByBuilder(MemberSearchCondition condition);
     List<MemberTeamDTO> searchByWhereClause(MemberSearchCondition condition);
     

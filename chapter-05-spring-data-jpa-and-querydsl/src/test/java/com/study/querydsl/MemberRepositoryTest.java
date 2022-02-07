@@ -1,13 +1,18 @@
 package com.study.querydsl;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
+
+import com.study.querydsl.domain.Member;
+import com.study.querydsl.domain.Team;
+import com.study.querydsl.dto.MemberSearchCondition;
+import com.study.querydsl.dto.MemberTeamDTO;
+import com.study.querydsl.repository.MemberRepository;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,13 +23,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.test.context.ActiveProfiles;
-
-import com.querydsl.core.types.Order;
-import com.study.querydsl.domain.Member;
-import com.study.querydsl.domain.Team;
-import com.study.querydsl.dto.MemberSearchCondition;
-import com.study.querydsl.dto.MemberTeamDTO;
-import com.study.querydsl.repository.MemberRepository;
 
 @ActiveProfiles("test")
 @SpringBootTest

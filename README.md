@@ -48,31 +48,7 @@ spring:
 - 챕터 2 : 기본 문법
 - 챕터 3 : 중급 문법
 - 챕터 4 : 실무 활용
-  - 챕터 5 : Spring Data Jpa와 Querydsl 혼합 사용
-    - Spring Data Jpa 리포지토리와 Querydsl 리포지토리 병합
-    - Querydsl과 Spring Data Jpa 페이징 연동
-        - count 쿼리를 생략 가능한 경우 생략해서 처리할 수도 있음
-           - org.springframework.data.support.PageableExecutionUtils를 활용
-             - 페이지 시작이면서 컨텐츠 사이즈가 페이지 사이즈보다 작을때
-             - 마지막 페이지 일때 (offset + 컨텐츠 사이즈를 더해서 전체사이즈를 구한다)
-    - 정렬 : SpringDataJpa의 정렬을 Querydsl의 정렬(OrderSpecifier)로 변경
-        - 단 단순한 엔티티 하나일때는 가능하지만 조인시에는 안되는 방법
-        - **조건이 복잡해 지면 별도의 파라미터를 받아서 직접 받아서 처리하는 것을 권장**
-    - 번외
-       - QuerydslPredicateExecutor
-          - Spring Data Jpa 인터페이스를 상속한 리포지토리 인터페이스에서 QuerydslPredicateExecutor를 상속받는다.
-          - Spring Data Jpa 인터페이스에서 제공하는 기본 메서드 파라미터에 Querydsl 조건식 사용가능
-          - **묵지석 조인은 가능하지만 left join이 불가능하다**
-          - **클라이언트가 Querydsl에 의존해야한다. 서비스 클래스가 Querydsl이라는 구현 기술에 의존해야한다**
-          - **실무의 복잡한 환경에서 한계가 있음**
-       - [Querydsl Web](https://docs.spring.io/spring-data/jpa/docs/2.2.3.RELEASE/reference/html/#core.web.type-safe)
-          - **단순 조건만 가능**
-          - **컨트롤러가 Querydsl에 의존**
-       - QuerydslRepositorySupport
-          - 스프링 데이터가 제공하는 페이징을 편리하게 변환 - **(단!Sort는 오류 발생)**
-          - 페이징과 카운트 쿼리 분리 가능
-          - 스프링 데이터 Sort 지원
-          - select() , selectFrom() 으로 시작 가능
-          - EntityManager , QueryFactory 제공
-          - **Querydsl3.x버전 대상으로 만들었으며 스프링 데이터 Sort기능이 정상 동작하지 않음**
-       - Querydsl지원 클래스를 직접만들기
+- 챕터 5 : Spring Data Jpa와 Querydsl 혼합 사용
+
+## 스프링 부트 2.6.x 이상 QueryDSL 버전 5.0 이상 설청
+- 첨부된 **실전Querydsl v2022-01-12.pdf** 파일을 확인
