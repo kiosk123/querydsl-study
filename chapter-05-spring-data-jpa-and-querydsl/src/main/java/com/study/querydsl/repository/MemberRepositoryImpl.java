@@ -16,6 +16,7 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.study.querydsl.domain.Member;
 import com.study.querydsl.dto.MemberSearchCondition;
 import com.study.querydsl.dto.MemberTeamDTO;
 import com.study.querydsl.dto.QMemberTeamDTO;
@@ -112,18 +113,22 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom {
 
         /**
          * 람다를 이용해서 count 쿼리가 조건에 따라 호출되어 쿼리 최적화
+         * 
+         * 스프링 데이터 라이브러리가 제공
+         * count 쿼리가 생략 가능한 경우 생략해서 처리
+         * - 페이지 시작이면서 컨텐츠 사이즈가 페이지 사이즈보다 작을 때
+         * - 마지막 페이지 일 때 (offset + 컨텐츠 사이즈를 더해서 전체 사이즈 구함)
          */
-        return PageableExecutionUtils.getPage(content, pageable, () -> {
-            return queryFactory
+        JPAQuery<Member> countQuery = queryFactory
                     .select(member)
                     .from(member)
                     .leftJoin(member.team, team)
                     .where(userNameEq(condition.getUserName()), 
                            teamNameEq(condition.getTeamName()),
                            ageGoe(condition.getAgeGoe()), 
-                           ageLoe(condition.getAgeLoe()))
-                    .fetchCount();
-        });
+                           ageLoe(condition.getAgeLoe()));
+
+        return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchCount);
     }
 
     /**

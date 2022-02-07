@@ -2,12 +2,12 @@
 
 - Spring Data Jpa 리포지토리와 Querydsl 리포지토리 병합
   - Querydsl과 Spring Data Jpa 페이징 연동
-    - count 쿼리를 생략 가능한 경우 생략해서 처리할 수도 있음
+    - **count 쿼리를 생략 가능한 경우 생략**해서 처리할 수도 있음
       - `org.springframework.data.support.PageableExecutionUtils`를 활용
         - 페이지 시작이면서 컨텐츠 사이즈가 페이지 사이즈보다 작을때
         - 마지막 페이지 일때 (**offset + 컨텐츠 사이즈를 더해서 전체사이즈를 구한다**)
- - 정렬 : SpringDataJpa의 정렬을 Querydsl의 정렬(OrderSpecifier)로 변경
-   - 단 단순한 엔티티 하나일때는 가능하지만 조인시에는 안되는 방법
+ - 정렬 : SpringDataJpa의 정렬을 Querydsl의 정렬(`OrderSpecifier`)로 변경
+   - 단 **단순한 엔티티 하나일때는 가능하지만 조인시에는 안되는 방법**
    - **조건이 복잡해 지면 별도의 파라미터를 받아서 직접 받아서 처리하는 것을 권장**
 
 ## 예제
@@ -43,6 +43,12 @@ public interface MemberRepositoryCustom {
 ```
 `MemberRepositoryCustom`를 구현한 `MemberRepositoryImpl`
 ```java
+//...
+import static com.study.querydsl.domain.QMember.member;
+import static com.study.querydsl.domain.QTeam.team;
+
+//...
+@Repository
 public class MemberRepositoryImpl implements MemberRepositoryCustom {
 
     private final EntityManager em;
@@ -53,9 +59,6 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom {
         this.queryFactory = new JPAQueryFactory(em); // 스프링 빈으로 등록해서 처리해도됨
     }
 
-    /**
-     * fetchResults()는 데이터와 토탈카운트를 같이 가져온다.
-     */
     @Override
     public Page<MemberTeamDTO> searchPageSimple(MemberSearchCondition condition, Pageable pageable) {
         QueryResults<MemberTeamDTO> results = 
@@ -128,19 +131,23 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom {
                 .fetch();
 
         /**
-         * 람다를 이용해서 count 쿼리가 조건에 따라 호출되어 쿼리 최적화
+         * PageableExecutionUtils.getPage()로 최적화
+         * 
+         * 스프링 데이터 라이브러리가 제공
+         * count 쿼리가 생략 가능한 경우 생략해서 처리
+         * - 페이지 시작이면서 컨텐츠 사이즈가 페이지 사이즈보다 작을 때
+         * - 마지막 페이지 일 때 (offset + 컨텐츠 사이즈를 더해서 전체 사이즈 구함)
          */
-        return PageableExecutionUtils.getPage(content, pageable, () -> {
-            return queryFactory
+        JPAQuery<Member> countQuery = queryFactory
                     .select(member)
                     .from(member)
                     .leftJoin(member.team, team)
                     .where(userNameEq(condition.getUserName()), 
                            teamNameEq(condition.getTeamName()),
                            ageGoe(condition.getAgeGoe()), 
-                           ageLoe(condition.getAgeLoe()))
-                    .fetchCount();
-        });
+                           ageLoe(condition.getAgeLoe()));
+
+        return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchCount);
     }
 
     /**
@@ -233,6 +240,7 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom {
         return (!StringUtils.hasText(userName)) ? null : member.userName.eq(userName);
     }
 }
+
 ```
 테스트 코드
 ```java
@@ -366,6 +374,26 @@ class MemberRepositoryTest {
                                        .containsExactly("member7", "member6", "member5");
         
         assertEquals(3L, result.getTotalElements());
+    }
+}
+```
+`MemberController`
+```java
+@RestController
+@RequiredArgsConstructor
+public class MemberController {
+    
+    private final MemberRepositoryImpl memberQuerydslRepository;
+    
+    @GetMapping("/v1/members")
+    public List<MemberTeamDTO> searchMemberV1(MemberSearchCondition condition) {
+        return memberQuerydslRepository.searchByWhereClause(condition);
+    }
+    
+    @GetMapping("/v2/members")
+    public Page<MemberTeamDTO> searchMemberV2(MemberSearchCondition condition, 
+                                              @PageableDefault(page = 0, size = 20)Pageable pageable) {
+        return memberQuerydslRepository.searchPageOptimal(condition, pageable);
     }
 }
 ```
