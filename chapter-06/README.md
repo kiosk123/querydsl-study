@@ -56,7 +56,8 @@ test {
 //querydsl 추가 시작 
 def querydslDir = "$buildDir/generated/querydsl"
 querydsl { 
-    jpa = true querydslSourcesDir = querydslDir 
+    jpa = true 
+    querydslSourcesDir = querydslDir 
 }
 
 sourceSets {
