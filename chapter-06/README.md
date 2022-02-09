@@ -15,8 +15,8 @@ buildscript {
 
 plugins { 
     id 'org.springframework.boot' version '2.6.2'
-    id 'io.spring.dependency-management' version '1.0.11.RELEASE' //querydsl 추가 
-    id "com.ewerk.gradle.plugins.querydsl" version "1.0.10"
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE' 
+    id "com.ewerk.gradle.plugins.querydsl" version "1.0.10" //querydsl 추가 
     id 'java'
 }
 
