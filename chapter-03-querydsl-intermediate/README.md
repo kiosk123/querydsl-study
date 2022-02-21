@@ -213,7 +213,7 @@
       }
   }
   ```
-  -- `distinct` 처리
+  - `distinct` 처리
   ```java
   List<String> result = queryFactory 
         .select(member.username).distinct() 
